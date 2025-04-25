@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { Shield, Code, Lock, Youtube } from "lucide-react";
+import { Shield, Code, Lock } from "lucide-react";
 import YouTube from 'react-youtube';
 
 const VibeSecurity = () => {
@@ -65,12 +64,12 @@ const VibeSecurity = () => {
               </div>
             </div>
             
-            <div className="flex flex-col justify-center space-y-4">
-              <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-8 py-6">
+            <div className="flex flex-col space-y-4">
+              <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-8 py-6 w-full">
                 Get Started
               </Button>
               
-              <div className="w-full rounded-xl overflow-hidden shadow-lg">
+              <div className="w-full -m-2">
                 <YouTube 
                   videoId="w4xKAwM1Ca8" 
                   opts={videoOptions}
