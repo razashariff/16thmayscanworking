@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import YouTube from 'react-youtube';
@@ -5,8 +6,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const VibeSecurity = () => {
   const videoOptions = {
-    height: '1920',
-    width: '1080',
+    height: '960',
+    width: '540',
     playerVars: {
       autoplay: 0,
       modestbranding: 1,
