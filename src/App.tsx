@@ -15,6 +15,9 @@ import ThreatDetection from "./pages/ThreatDetection";
 import DataProtection from "./pages/DataProtection";
 import SecurityTraining from "./pages/SecurityTraining";
 import IncidentResponse from "./pages/IncidentResponse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import CookiePolicy from "./pages/CookiePolicy";
 
 const queryClient = new QueryClient();
 
