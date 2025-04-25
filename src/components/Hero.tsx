@@ -65,29 +65,14 @@ const Hero = () => {
           
           <div className="hidden md:block">
             <div className="w-full max-w-xl mx-auto">
-              <div className="rounded-lg overflow-hidden shadow-2xl border border-cyber-blue/30">
-                <iframe
-                  src="https://youtube.com/embed/w4xKAwM1Ca8"
-                  width="100%"
-                  height="315"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full"
-                ></iframe>
-                <div className="bg-cyber-dark/95 p-6">
-                  <h3 className="text-xl font-bold gradient-text mb-4">Vibe Coding Security</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="bg-cyber-dark/50 p-3 rounded-lg border border-cyber-blue/20">
-                      <div className="text-lg font-bold text-cyber-neon">100%</div>
-                      <div className="text-xs text-cyber-muted">Success Rate</div>
-                    </div>
-                    <div className="bg-cyber-dark/50 p-3 rounded-lg border border-cyber-blue/20">
-                      <div className="text-lg font-bold text-cyber-neon">24/7</div>
-                      <div className="text-xs text-cyber-muted">Support</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <iframe
+                src="https://youtube.com/embed/w4xKAwM1Ca8"
+                width="100%"
+                height="315"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full rounded-lg"
+              ></iframe>
             </div>
           </div>
         </div>
