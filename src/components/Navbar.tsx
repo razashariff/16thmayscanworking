@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -138,7 +137,7 @@ const Navbar = () => {
         </div>
       )}
 
-      <BookingModal isOpen={isModalOpen} onClose={closeModal} calendlyUsername="breach2020" />
+      <BookingModal isOpen={isModalOpen} onClose={closeModal} />
     </nav>
   );
 };

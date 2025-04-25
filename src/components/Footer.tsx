@@ -68,14 +68,6 @@ const Footer = () => {
                   contact@cybersecai.co.uk
                 </a>
               </li>
-              <li className="pt-4">
-                <button 
-                  onClick={triggerCalendly}
-                  className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-cyber-blue to-cyber-purple text-white rounded-md hover:from-cyber-purple hover:to-cyber-blue transition-all duration-300 shadow-lg hover:shadow-cyber-neon/30"
-                >
-                  Book Your Free Consultation
-                </button>
-              </li>
             </ul>
           </div>
         </div>

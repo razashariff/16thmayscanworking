@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight, Lock } from "lucide-react";
 
