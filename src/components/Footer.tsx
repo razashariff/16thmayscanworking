@@ -1,4 +1,3 @@
-
 import { Mail, MapPin, Phone, Linkedin, Twitter, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -98,9 +97,9 @@ const Footer = () => {
             © {currentYear} CyberSecAI. All rights reserved.
           </p>
           <div className="flex space-x-8">
-            <Link to="#" className="text-sm text-cyber-muted hover:text-cyber-neon transition-colors duration-300">Privacy Policy</Link>
-            <Link to="#" className="text-sm text-cyber-muted hover:text-cyber-neon transition-colors duration-300">Terms of Service</Link>
-            <Link to="#" className="text-sm text-cyber-muted hover:text-cyber-neon transition-colors duration-300">Cookie Policy</Link>
+            <Link to="/privacy-policy" className="text-sm text-cyber-muted hover:text-cyber-neon transition-colors duration-300">Privacy Policy</Link>
+            <Link to="/terms" className="text-sm text-cyber-muted hover:text-cyber-neon transition-colors duration-300">Terms of Service</Link>
+            <Link to="/cookie-policy" className="text-sm text-cyber-muted hover:text-cyber-neon transition-colors duration-300">Cookie Policy</Link>
           </div>
         </div>
       </div>

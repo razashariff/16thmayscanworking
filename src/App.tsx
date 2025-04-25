@@ -33,6 +33,9 @@ const App = () => (
           <Route path="/data-protection" element={<DataProtection />} />
           <Route path="/security-training" element={<SecurityTraining />} />
           <Route path="/incident-response" element={<IncidentResponse />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
