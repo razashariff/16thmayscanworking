@@ -1,4 +1,6 @@
 
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 
 const AboutPage = () => {
@@ -15,8 +17,9 @@ const AboutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cyber-dark text-cyber-text pt-24">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-cyber-dark text-cyber-text">
+      <Navbar />
+      <div className="container mx-auto px-4 pt-24">
         <h1 className="text-4xl font-bold gradient-text mb-8">About Us</h1>
         <p className="text-cyber-muted mb-8">Content coming soon...</p>
         <div className="flex justify-end">
@@ -28,6 +31,7 @@ const AboutPage = () => {
           </Button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

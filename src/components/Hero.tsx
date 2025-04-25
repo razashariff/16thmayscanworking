@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight, Lock } from "lucide-react";
 
@@ -63,17 +64,15 @@ const Hero = () => {
             </div>
           </div>
           
-          <div className="hidden md:block">
-            <div className="w-full max-w-xl mx-auto">
-              <iframe
-                src="https://youtube.com/embed/w4xKAwM1Ca8"
-                width="100%"
-                height="315"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full rounded-lg"
-              ></iframe>
-            </div>
+          <div className="hidden md:flex justify-center items-center">
+            <iframe
+              src="https://youtube.com/embed/w4xKAwM1Ca8"
+              width="560"
+              height="315"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title="Vibe Coding Security"
+            ></iframe>
           </div>
         </div>
       </div>
