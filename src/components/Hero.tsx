@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight, Lock } from "lucide-react";
 
@@ -70,10 +69,17 @@ const Hero = () => {
               <div className="hexagon bg-cyber-dark p-8 border border-cyber-blue/30 shadow-lg backdrop-blur-sm">
                 <div className="absolute inset-0 hexagon bg-cyber-grid opacity-20"></div>
                 <div className="relative z-10 space-y-6 p-4 text-center">
-                  <div className="w-20 h-20 mx-auto rounded-full bg-cyber-purple/20 flex items-center justify-center animate-pulse-glow">
-                    <Shield size={40} className="text-cyber-neon" />
+                  <div className="w-full aspect-video rounded-lg overflow-hidden">
+                    <iframe
+                      src="https://youtube.com/embed/w4xKAwM1Ca8"
+                      width="100%"
+                      height="100%"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    ></iframe>
                   </div>
-                  <h3 className="text-xl font-bold gradient-text">Next-Gen Security</h3>
+                  <h3 className="text-xl font-bold gradient-text">Vibe Coding Security</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="bg-cyber-dark/50 p-3 rounded-lg border border-cyber-blue/20">
                       <div className="text-lg font-bold text-cyber-neon">100%</div>

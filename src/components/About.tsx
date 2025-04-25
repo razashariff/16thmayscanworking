@@ -85,7 +85,7 @@ const About = () => {
               onClick={triggerCalendly}
               className="bg-cyber-purple hover:bg-cyber-blue text-white transition-colors"
             >
-              Schedule a Consultation
+              Vibe Coding Blueprint
             </Button>
           </div>
         </div>

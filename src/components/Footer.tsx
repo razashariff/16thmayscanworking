@@ -82,7 +82,7 @@ const Footer = () => {
                   onClick={triggerCalendly}
                   className="inline-flex items-center px-4 py-2 border border-cyber-neon text-cyber-neon hover:bg-cyber-neon/10 rounded-md transition-colors"
                 >
-                  Book a Consultation
+                  Book a Call
                 </button>
               </li>
             </ul>
