@@ -28,6 +28,7 @@ const VibeSecurity = () => {
       <div className="container mx-auto px-4 pt-16 pb-24 relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-in">
+            {/* Restore the missing section */}
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-cyber-purple/10 border border-cyber-purple/30">
               <Lock size={14} className="text-cyber-neon mr-2" />
               <span className="text-sm">AppSec for Vibe Coders</span>
@@ -59,8 +60,8 @@ const VibeSecurity = () => {
             </div>
           </div>
           
-          <div className="flex flex-col space-y-4">
-            <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-8 py-6 w-full">
+          <div className="flex flex-col space-y-4 ml-auto max-w-[480px]">
+            <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-4 py-2 w-full text-sm">
               Get Started
             </Button>
             
