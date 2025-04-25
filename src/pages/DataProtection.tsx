@@ -23,7 +23,7 @@ const DataProtection = () => {
         
         <div className="glass-panel p-8 rounded-xl border border-cyber-purple/20 mb-12">
           <h2 className="text-2xl font-bold mb-6 gradient-text">Service Overview</h2>
-          <p className="text-cyber-muted">Content coming soon...</p>
+          <p className="text-cyber-muted">Our data protection strategies ensure your sensitive information is secured, encrypted, and managed with the highest standards of confidentiality.</p>
         </div>
       </div>
       <Footer />

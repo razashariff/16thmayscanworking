@@ -23,7 +23,7 @@ const SecurityTraining = () => {
         
         <div className="glass-panel p-8 rounded-xl border border-cyber-purple/20 mb-12">
           <h2 className="text-2xl font-bold mb-6 gradient-text">Service Overview</h2>
-          <p className="text-cyber-muted">Content coming soon...</p>
+          <p className="text-cyber-muted">Our security training programs are tailored to your organization's unique needs, covering key areas of cybersecurity awareness, risk mitigation, and best practices.</p>
         </div>
       </div>
       <Footer />

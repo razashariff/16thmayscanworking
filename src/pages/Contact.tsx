@@ -10,7 +10,7 @@ const ContactPage = () => {
         <div className="absolute inset-0 bg-cyber-grid opacity-5"></div>
         <div className="relative z-10">
           <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-8">Contact Us</h1>
-          <div className="text-cyber-muted text-lg">Content coming soon...</div>
+          <div className="text-cyber-muted text-lg">We're here to help. Please reach out for any inquiries.</div>
         </div>
       </div>
       <Footer />

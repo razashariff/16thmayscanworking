@@ -23,7 +23,7 @@ const VibeCodingSecurity = () => {
         
         <div className="glass-panel p-8 rounded-xl border border-cyber-purple/20 mb-12">
           <h2 className="text-2xl font-bold mb-6 gradient-text">Service Overview</h2>
-          <p className="text-cyber-muted">Content coming soon...</p>
+          <p className="text-cyber-muted">Our Vibe Coding Security approach integrates security seamlessly into the development process, ensuring robust protection from the ground up.</p>
         </div>
       </div>
       <Footer />
