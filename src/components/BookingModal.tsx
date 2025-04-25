@@ -32,8 +32,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   // Update Calendly when modal opens
   useEffect(() => {
     if (isOpen && iframeRef.current) {
-      // Replace this URL with your actual Calendly link
-      const calendlyUrl = 'https://calendly.com/cybersecai';
+      // Use the correct Calendly URL
+      const calendlyUrl = 'https://calendly.com/breach2020';
       iframeRef.current.src = calendlyUrl;
     }
   }, [isOpen]);
@@ -57,11 +57,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         <div className="mt-4 h-[600px] w-full">
           <div 
             className="calendly-inline-widget w-full h-full" 
-            data-url="https://calendly.com/cybersecai"
+            data-url="https://calendly.com/breach2020"
           >
             <iframe
               ref={iframeRef}
-              src=""
+              src="https://calendly.com/breach2020"
               width="100%"
               height="100%"
               frameBorder="0"

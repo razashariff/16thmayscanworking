@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { Shield, ArrowRight, Lock, BookOpen } from "lucide-react";
+import { Shield, ArrowRight, Lock } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -87,26 +88,6 @@ const Hero = () => {
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex items-center flex-col">
-          <a 
-            href="https://cyber-sec.info" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex flex-col items-center group transition-all duration-300 hover:-translate-y-2"
-          >
-            <span className="text-xl font-bold text-cyber-neon mb-3">Breach 20/20</span>
-            <div className="relative">
-              <div className="absolute inset-0 bg-cyber-neon/20 blur-lg rounded-full animate-pulse"></div>
-              <div className="relative bg-cyber-dark/80 p-6 rounded-xl border-2 border-cyber-neon hover:border-cyber-purple transition-colors duration-300">
-                <BookOpen className="h-16 w-16 text-cyber-neon animate-float" />
-              </div>
-            </div>
-            <span className="text-lg text-cyber-neon mt-4 font-medium group-hover:text-cyber-purple transition-colors">
-              Data Breach Prevention Guide
-            </span>
-          </a>
         </div>
       </div>
     </section>
