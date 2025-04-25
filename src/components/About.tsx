@@ -3,6 +3,18 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
 const About = () => {
+  const triggerCalendly = () => {
+    const element = document.querySelector('[data-calendly-link]');
+    if (element) {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      element.dispatchEvent(event);
+    }
+  };
+
   return (
     <section id="about" className="py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-cyber-dark"></div>
@@ -70,7 +82,7 @@ const About = () => {
             </div>
             
             <Button 
-              onClick={() => document.querySelector('[data-calendly-link]')?.click()}
+              onClick={triggerCalendly}
               className="bg-cyber-purple hover:bg-cyber-blue text-white transition-colors"
             >
               Schedule a Consultation

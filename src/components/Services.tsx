@@ -36,6 +36,18 @@ const services = [
 ];
 
 const Services = () => {
+  const triggerCalendly = () => {
+    const element = document.querySelector('[data-calendly-link]');
+    if (element) {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      element.dispatchEvent(event);
+    }
+  };
+
   return (
     <section id="services" className="py-20 relative overflow-hidden bg-cyber-dark">
       <div className="absolute inset-0 bg-cyber-grid opacity-10"></div>
@@ -78,7 +90,7 @@ const Services = () => {
             </div>
             <div className="flex justify-center md:justify-end">
               <button 
-                onClick={() => document.querySelector('[data-calendly-link]')?.click()}
+                onClick={triggerCalendly}
                 className="px-6 py-3 bg-cyber-neon text-cyber-dark font-medium rounded-lg hover:bg-opacity-90 transition-all shadow-lg shadow-cyber-neon/20"
               >
                 Book Your Free Consultation

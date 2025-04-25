@@ -2,6 +2,18 @@
 import { Mail, MapPin, Phone, Github, Linkedin, Twitter } from "lucide-react";
 
 const Footer = () => {
+  const triggerCalendly = () => {
+    const element = document.querySelector('[data-calendly-link]');
+    if (element) {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      element.dispatchEvent(event);
+    }
+  };
+
   return (
     <footer id="contact" className="bg-cyber-dark relative overflow-hidden border-t border-cyber-blue/20">
       <div className="absolute inset-0 bg-cyber-grid opacity-5"></div>
@@ -67,7 +79,7 @@ const Footer = () => {
               </li>
               <li className="pt-4">
                 <button 
-                  onClick={() => document.querySelector('[data-calendly-link]')?.click()}
+                  onClick={triggerCalendly}
                   className="inline-flex items-center px-4 py-2 border border-cyber-neon text-cyber-neon hover:bg-cyber-neon/10 rounded-md transition-colors"
                 >
                   Book a Consultation
