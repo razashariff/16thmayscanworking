@@ -6,8 +6,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const VibeSecurity = () => {
   const videoOptions = {
-    height: '960',
-    width: '540',
+    height: '480',
+    width: '270',
     playerVars: {
       autoplay: 0,
       modestbranding: 1,
