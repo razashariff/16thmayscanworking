@@ -1,37 +1,44 @@
 
 import { ShieldCheck, Search, Code, Database, Zap, UserCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const services = [
   {
     icon: <ShieldCheck className="h-12 w-12 text-cyber-neon" />,
     title: "Security Audits",
-    description: "Comprehensive assessment of your startup's security posture with actionable recommendations."
+    description: "Comprehensive assessment of your startup's security posture with actionable recommendations.",
+    link: "/security-audits"
   },
   {
     icon: <Code className="h-12 w-12 text-cyber-purple" />,
     title: "Vibe Coding Security",
-    description: "Specialized security practices for modern development methodologies and frameworks."
+    description: "Specialized security practices for modern development methodologies and frameworks.",
+    link: "/vibe-coding-security"
   },
   {
     icon: <Search className="h-12 w-12 text-cyber-blue" />,
     title: "Threat Detection",
-    description: "Proactive monitoring and identification of potential security threats before they become breaches."
+    description: "Proactive monitoring and identification of potential security threats before they become breaches.",
+    link: "/threat-detection"
   },
   {
     icon: <Database className="h-12 w-12 text-cyber-accent" />,
     title: "Data Protection",
-    description: "Implementation of robust data security measures to safeguard your valuable information."
+    description: "Implementation of robust data security measures to safeguard your valuable information.",
+    link: "/data-protection"
   },
   {
     icon: <UserCheck className="h-12 w-12 text-cyber-neon" />,
     title: "Security Training",
-    description: "Custom security awareness training for your team to build a security-first culture."
+    description: "Custom security awareness training for your team to build a security-first culture.",
+    link: "/security-training"
   },
   {
     icon: <Zap className="h-12 w-12 text-cyber-purple" />,
     title: "Incident Response",
-    description: "Rapid and effective response strategies for security incidents to minimize impact."
+    description: "Rapid and effective response strategies for security incidents to minimize impact.",
+    link: "/incident-response"
   }
 ];
 
@@ -62,19 +69,21 @@ const Services = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <Card key={index} className="bg-cyber-dark border border-cyber-blue/20 hover:border-cyber-neon/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyber-neon/10">
-              <CardHeader>
-                <div className="mb-4 p-3 inline-block rounded-lg bg-cyber-purple/10">
-                  {service.icon}
-                </div>
-                <CardTitle className="text-xl font-bold text-cyber-text">{service.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-cyber-muted text-base">
-                  {service.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
+            <Link to={service.link} key={index} className="block transition-transform hover:scale-105">
+              <Card className="bg-cyber-dark border border-cyber-blue/20 hover:border-cyber-neon/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyber-neon/10 h-full">
+                <CardHeader>
+                  <div className="mb-4 p-3 inline-block rounded-lg bg-cyber-purple/10">
+                    {service.icon}
+                  </div>
+                  <CardTitle className="text-xl font-bold text-cyber-text">{service.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-cyber-muted text-base">
+                    {service.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
         

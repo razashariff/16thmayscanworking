@@ -2,10 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import YouTube from 'react-youtube';
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const VibeSecurity = () => {
   const videoOptions = {
-    height: '360',
+    height: '100%',
     width: '100%',
     playerVars: {
       autoplay: 0,
@@ -72,12 +73,14 @@ const VibeSecurity = () => {
                 Get Started
               </Button>
               
-              <div className="glass-panel overflow-hidden rounded-xl border border-cyber-purple/30">
-                <YouTube 
-                  videoId="w4xKAwM1Ca8" 
-                  opts={videoOptions}
-                  className="aspect-video"
-                />
+              <div className="glass-panel rounded-xl border border-cyber-purple/30 p-0 overflow-hidden">
+                <AspectRatio ratio={16/9}>
+                  <YouTube 
+                    videoId="w4xKAwM1Ca8" 
+                    opts={videoOptions}
+                    className="h-full w-full"
+                  />
+                </AspectRatio>
               </div>
             </div>
           </div>
