@@ -6,7 +6,6 @@ const Hero = () => {
     <section className="relative min-h-screen pt-24 overflow-hidden">
       <div className="hero-gradient absolute inset-0 z-0"></div>
       
-      {/* Particles for visual effect */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="particle"></div>
         <div className="particle"></div>
@@ -64,22 +63,19 @@ const Hero = () => {
             </div>
           </div>
           
-          <div className="hidden md:flex justify-center">
-            <div className="relative animate-float w-full max-w-md">
-              <div className="hexagon bg-cyber-dark p-8 border border-cyber-blue/30 shadow-lg backdrop-blur-sm">
-                <div className="absolute inset-0 hexagon bg-cyber-grid opacity-20"></div>
-                <div className="relative z-10 space-y-6 p-4 text-center">
-                  <div className="w-full aspect-video rounded-lg overflow-hidden">
-                    <iframe
-                      src="https://youtube.com/embed/w4xKAwM1Ca8"
-                      width="100%"
-                      height="100%"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    ></iframe>
-                  </div>
-                  <h3 className="text-xl font-bold gradient-text">Vibe Coding Security</h3>
+          <div className="hidden md:block">
+            <div className="w-full max-w-xl mx-auto">
+              <div className="rounded-lg overflow-hidden shadow-2xl border border-cyber-blue/30">
+                <iframe
+                  src="https://youtube.com/embed/w4xKAwM1Ca8"
+                  width="100%"
+                  height="315"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full"
+                ></iframe>
+                <div className="bg-cyber-dark/95 p-6">
+                  <h3 className="text-xl font-bold gradient-text mb-4">Vibe Coding Security</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="bg-cyber-dark/50 p-3 rounded-lg border border-cyber-blue/20">
                       <div className="text-lg font-bold text-cyber-neon">100%</div>
