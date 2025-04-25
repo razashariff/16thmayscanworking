@@ -1,6 +1,7 @@
 import { ShieldCheck, Search, Code, Database, Zap, UserCheck } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const services = [
   {
@@ -128,19 +129,6 @@ const Services = () => {
     }
   };
 
-  const videoOptions = {
-    height: '480',
-    width: '270',
-    playerVars: {
-      autoplay: 0,
-      modestbranding: 1,
-      controls: 1,
-      showinfo: 0,
-      rel: 0,
-      title: 0
-    },
-  };
-
   return (
     <section id="services" className="py-20 relative overflow-hidden bg-cyber-dark">
       <div className="absolute inset-0 bg-cyber-grid opacity-10"></div>
@@ -227,16 +215,16 @@ const Services = () => {
                 Not sure which service you need?
               </h3>
               <p className="text-cyber-muted mb-6">
-                Book a free consultation call, and we'll help identify the best security approach for your specific needs.
+                We offer new founders and Vibe Coders a free 15 minute slot to discuss specific security challenges and support. Reach out to discuss your requirements and we welcome collaboration, partners and sponsors to work with us too.
               </p>
             </div>
             <div className="flex justify-center md:justify-end">
-              <button 
+              <Button 
                 onClick={triggerCalendly}
                 className="px-6 py-3 bg-cyber-neon text-cyber-dark font-medium rounded-lg hover:bg-opacity-90 transition-all shadow-lg shadow-cyber-neon/20"
               >
                 Book Your Free Consultation
-              </button>
+              </Button>
             </div>
           </div>
         </div>

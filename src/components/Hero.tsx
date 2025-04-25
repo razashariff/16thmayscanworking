@@ -3,6 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Shield, ArrowRight, Lock } from "lucide-react";
 
 const Hero = () => {
+  const triggerCalendly = () => {
+    const element = document.querySelector('[data-calendly-link]');
+    if (element) {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      element.dispatchEvent(event);
+    }
+  };
+
   return (
     <section className="relative min-h-screen pt-24 overflow-hidden">
       <div className="hero-gradient absolute inset-0 z-0"></div>
@@ -43,10 +55,10 @@ const Hero = () => {
               
               <Button 
                 variant="outline" 
-                onClick={() => document.getElementById('about')?.scrollIntoView({behavior: 'smooth'})}
+                onClick={triggerCalendly}
                 className="border-cyber-neon text-cyber-neon hover:bg-cyber-neon/10 px-8 py-6 text-lg"
               >
-                Learn More
+                Book Free Consultation
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>

@@ -20,7 +20,7 @@ const Footer = () => {
     <footer id="contact" className="bg-gradient-to-b from-cyber-dark to-black relative overflow-hidden border-t border-cyber-blue/20">
       <div className="absolute inset-0 bg-cyber-grid opacity-5"></div>
       
-      <div className="container mx-auto px-4 py-16 relative z-10">
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <Link to="/" className="inline-block mb-6">
@@ -81,7 +81,7 @@ const Footer = () => {
                   onClick={triggerCalendly}
                   className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-cyber-blue to-cyber-purple text-white rounded-md hover:from-cyber-purple hover:to-cyber-blue transition-all duration-300 shadow-lg hover:shadow-cyber-neon/30"
                 >
-                  Book a Call
+                  Book Your Free Consultation
                 </button>
               </li>
             </ul>
