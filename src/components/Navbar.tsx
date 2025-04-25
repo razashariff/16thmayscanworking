@@ -138,7 +138,7 @@ const Navbar = () => {
         </div>
       )}
 
-      <BookingModal isOpen={isModalOpen} onClose={closeModal} />
+      <BookingModal isOpen={isModalOpen} onClose={closeModal} calendlyUsername="breach2020" />
     </nav>
   );
 };

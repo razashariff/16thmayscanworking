@@ -4,15 +4,8 @@ import { Shield, ArrowRight, Lock } from "lucide-react";
 
 const Hero = () => {
   const triggerCalendly = () => {
-    const element = document.querySelector('[data-calendly-link]');
-    if (element) {
-      const event = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
-      element.dispatchEvent(event);
-    }
+    // Open directly to breach2020 Calendly
+    window.open('https://calendly.com/breach2020', '_blank');
   };
 
   return (
