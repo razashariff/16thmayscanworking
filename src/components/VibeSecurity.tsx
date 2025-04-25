@@ -1,10 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import YouTube from 'react-youtube';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useState } from 'react';
 
 const VibeSecurity = () => {
+  const [player, setPlayer] = useState<any>(null);
+  
   const videoOptions = {
     height: '480',
     width: '270',
@@ -13,6 +15,22 @@ const VibeSecurity = () => {
       modestbranding: 1,
       controls: 1,
     },
+  };
+
+  const handleReady = (event: any) => {
+    setPlayer(event.target);
+  };
+
+  const handleMouseEnter = () => {
+    if (player) {
+      player.playVideo();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (player) {
+      player.pauseVideo();
+    }
   };
 
   return (
@@ -28,7 +46,6 @@ const VibeSecurity = () => {
       <div className="container mx-auto px-4 pt-16 pb-24 relative z-10">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-in">
-            {/* Restore the missing section */}
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-cyber-purple/10 border border-cyber-purple/30">
               <Lock size={14} className="text-cyber-neon mr-2" />
               <span className="text-sm">AppSec for Vibe Coders</span>
@@ -48,7 +65,7 @@ const VibeSecurity = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="glass-panel p-6 rounded-xl animate-float">
                 <Shield className="text-cyber-neon mb-4 h-8 w-8" />
-                <h3 className="text-xl font-semibold mb-2">OWASP Aligned</h3>
+                <h3 className="text-xl font-semibold mb-2">Protect your SaaS Brand from Data Loss</h3>
                 <p className="text-cyber-muted">Clear visibility into critical vulnerabilities and real-world attack patterns</p>
               </div>
               
@@ -65,11 +82,17 @@ const VibeSecurity = () => {
               Get Started
             </Button>
             
-            <YouTube 
-              videoId="w4xKAwM1Ca8" 
-              opts={videoOptions}
-              className="w-full h-full"
-            />
+            <div 
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <YouTube 
+                videoId="w4xKAwM1Ca8" 
+                opts={videoOptions}
+                onReady={handleReady}
+                className="w-full h-full"
+              />
+            </div>
           </div>
         </div>
       </div>
