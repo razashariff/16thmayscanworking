@@ -1,6 +1,5 @@
 
 import Navbar from '@/components/Navbar';
-import Hero from '@/components/Hero';
 import Services from '@/components/Services';
 import About from '@/components/About';
 import Footer from '@/components/Footer';
@@ -9,7 +8,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-cyber-dark text-cyber-text">
       <Navbar />
-      <Hero />
+      <div className="container mx-auto px-4 pt-24 pb-12">
+        <div className="flex justify-center my-12">
+          <iframe
+            src="https://youtube.com/embed/w4xKAwM1Ca8"
+            width="800"
+            height="450"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title="Cyber Security"
+            className="shadow-lg rounded-lg"
+          ></iframe>
+        </div>
+      </div>
       <Services />
       <About />
       <Footer />

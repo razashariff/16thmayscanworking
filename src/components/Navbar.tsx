@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Calendar, Menu, X } from "lucide-react";
 import BookingModal from './BookingModal';
@@ -8,10 +8,13 @@ import BookingModal from './BookingModal';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+  
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav className="fixed w-full top-0 z-50 bg-cyber-dark/80 backdrop-blur-lg border-b border-cyber-blue/20">
@@ -23,10 +26,10 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="text-cyber-text hover:text-cyber-neon transition-colors">Home</Link>
-            <Link to="/services" className="text-cyber-text hover:text-cyber-neon transition-colors">Services</Link>
-            <Link to="/about" className="text-cyber-text hover:text-cyber-neon transition-colors">About</Link>
-            <Link to="/contact" className="text-cyber-text hover:text-cyber-neon transition-colors">Contact</Link>
+            <Link to="/" className={`transition-colors ${isActive('/') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}>Home</Link>
+            <Link to="/services" className={`transition-colors ${isActive('/services') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}>Services</Link>
+            <Link to="/about" className={`transition-colors ${isActive('/about') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}>About</Link>
+            <Link to="/contact" className={`transition-colors ${isActive('/contact') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}>Contact</Link>
           </div>
           <Button 
             onClick={openModal}
@@ -51,10 +54,10 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-cyber-dark border-t border-cyber-blue/20 py-4 animate-fade-in">
           <div className="container mx-auto px-4 flex flex-col space-y-4">
-            <Link to="/" className="text-cyber-text hover:text-cyber-neon px-2 py-2 rounded-md" onClick={toggleMenu}>Home</Link>
-            <Link to="/services" className="text-cyber-text hover:text-cyber-neon px-2 py-2 rounded-md" onClick={toggleMenu}>Services</Link>
-            <Link to="/about" className="text-cyber-text hover:text-cyber-neon px-2 py-2 rounded-md" onClick={toggleMenu}>About</Link>
-            <Link to="/contact" className="text-cyber-text hover:text-cyber-neon px-2 py-2 rounded-md" onClick={toggleMenu}>Contact</Link>
+            <Link to="/" className={`px-2 py-2 rounded-md ${isActive('/') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} onClick={toggleMenu}>Home</Link>
+            <Link to="/services" className={`px-2 py-2 rounded-md ${isActive('/services') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} onClick={toggleMenu}>Services</Link>
+            <Link to="/about" className={`px-2 py-2 rounded-md ${isActive('/about') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} onClick={toggleMenu}>About</Link>
+            <Link to="/contact" className={`px-2 py-2 rounded-md ${isActive('/contact') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} onClick={toggleMenu}>Contact</Link>
             <Button 
               onClick={() => {
                 openModal();
