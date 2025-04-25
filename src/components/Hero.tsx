@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Shield, ArrowRight, Lock } from "lucide-react";
+import { Shield, ArrowRight, Lock, BookOpen } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -89,32 +89,21 @@ const Hero = () => {
           </div>
         </div>
         
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center flex-col">
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex items-center flex-col">
           <a 
             href="https://cyber-sec.info" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex flex-col items-center group transition-all duration-300 hover:-translate-y-1"
+            className="flex flex-col items-center group transition-all duration-300 hover:-translate-y-2"
           >
-            <span className="text-cyber-muted text-sm mb-2">Breach 20/20</span>
+            <span className="text-xl font-bold text-cyber-neon mb-3">Breach 20/20</span>
             <div className="relative">
-              <div className="absolute inset-0 bg-cyber-neon/20 blur-md rounded-full animate-pulse"></div>
-              <div className="book-open h-10 w-10 text-cyber-neon relative animate-bounce">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
+              <div className="absolute inset-0 bg-cyber-neon/20 blur-lg rounded-full animate-pulse"></div>
+              <div className="relative bg-cyber-dark/80 p-6 rounded-xl border-2 border-cyber-neon hover:border-cyber-purple transition-colors duration-300">
+                <BookOpen className="h-16 w-16 text-cyber-neon animate-float" />
               </div>
             </div>
-            <span className="text-cyber-neon text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-lg text-cyber-neon mt-4 font-medium group-hover:text-cyber-purple transition-colors">
               Data Breach Prevention Guide
             </span>
           </a>

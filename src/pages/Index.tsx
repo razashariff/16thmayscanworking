@@ -14,9 +14,9 @@ const Index = () => {
       <About />
       <Footer />
       
-      {/* Hidden Calendly link to be clicked programmatically */}
+      {/* Hidden Calendly link */}
       <a 
-        href="#" 
+        href="https://calendly.com/breach2020" 
         className="hidden" 
         data-calendly-link 
         onClick={(e) => {
@@ -29,7 +29,7 @@ const Index = () => {
           document.querySelector('.calendly-inline-widget')?.dispatchEvent(event);
         }}
       >
-        Open Calendly
+        Book a Call
       </a>
     </div>
   );
