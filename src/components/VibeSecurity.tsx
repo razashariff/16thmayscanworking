@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import YouTube from 'react-youtube';
@@ -6,8 +5,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const VibeSecurity = () => {
   const videoOptions = {
-    height: '100%',
-    width: '100%',
+    height: '1920',
+    width: '1080',
     playerVars: {
       autoplay: 0,
       modestbranding: 1,
@@ -59,30 +58,16 @@ const VibeSecurity = () => {
             </div>
           </div>
           
-          <div className="space-y-8 animate-fade-in delay-200">
-            <div className="glass-panel p-8 rounded-xl">
-              <h2 className="text-2xl font-bold mb-6 gradient-text">Our Approach</h2>
-              <div className="space-y-6 text-cyber-muted">
-                <p>We align our support with industry standards like the OWASP Top 10, giving coders clear visibility into the most common and critical vulnerabilities — from injection flaws and insecure design to broken access controls and cryptographic failures.</p>
-                <p>By demystifying application security and making it actionable, we help developers not only fix issues, but think like defenders — reducing the risk of breaches before the code ever goes live.</p>
-              </div>
-            </div>
+          <div className="flex flex-col space-y-4">
+            <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-8 py-6 w-full">
+              Get Started
+            </Button>
             
-            <div className="flex flex-col space-y-4">
-              <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-8 py-6 w-full">
-                Get Started
-              </Button>
-              
-              <div className="glass-panel rounded-xl border border-cyber-purple/30 p-0 overflow-hidden">
-                <AspectRatio ratio={16/9}>
-                  <YouTube 
-                    videoId="w4xKAwM1Ca8" 
-                    opts={videoOptions}
-                    className="h-full w-full"
-                  />
-                </AspectRatio>
-              </div>
-            </div>
+            <YouTube 
+              videoId="w4xKAwM1Ca8" 
+              opts={videoOptions}
+              className="w-full h-full"
+            />
           </div>
         </div>
       </div>
