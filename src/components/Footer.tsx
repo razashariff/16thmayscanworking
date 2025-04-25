@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Linkedin, Twitter, Instagram } from "lucide-react";
+import { Mail, MapPin, Linkedin, Twitter, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -43,7 +43,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-bold text-cyber-text mb-6 relative pl-4 before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-cyber-blue before:to-cyber-purple">Services</h3>
+            <h3 className="text-lg font-bold text-cyber-text mb-6 relative pl-4 before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-cyber-neon before:to-cyber-purple">Services</h3>
             <ul className="space-y-3">
               <li><Link to="/services" className="text-cyber-muted hover:text-cyber-neon transition-colors duration-300 flex items-center">Security Audits</Link></li>
               <li><Link to="/services" className="text-cyber-muted hover:text-cyber-neon transition-colors duration-300 flex items-center">Vibe Coding Security</Link></li>
@@ -75,10 +75,6 @@ const Footer = () => {
                 <a href="mailto:contact@cybersecai.co.uk" className="text-cyber-muted group-hover:text-cyber-neon transition-colors duration-300">
                   contact@cybersecai.co.uk
                 </a>
-              </li>
-              <li className="flex items-center group">
-                <Phone className="h-5 w-5 text-cyber-neon mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
-                <span className="text-cyber-muted group-hover:text-cyber-text transition-colors duration-300">+44 (0) 123 456 7890</span>
               </li>
               <li className="pt-4">
                 <button 
