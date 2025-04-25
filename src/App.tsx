@@ -9,6 +9,12 @@ import ServicesPage from "./pages/Services";
 import AboutPage from "./pages/About";
 import ContactPage from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import SecurityAudits from "./pages/SecurityAudits";
+import VibeCodingSecurity from "./pages/VibeCodingSecurity";
+import ThreatDetection from "./pages/ThreatDetection";
+import DataProtection from "./pages/DataProtection";
+import SecurityTraining from "./pages/SecurityTraining";
+import IncidentResponse from "./pages/IncidentResponse";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +27,12 @@ const App = () => (
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/security-audits" element={<SecurityAudits />} />
+          <Route path="/vibe-coding-security" element={<VibeCodingSecurity />} />
+          <Route path="/threat-detection" element={<ThreatDetection />} />
+          <Route path="/data-protection" element={<DataProtection />} />
+          <Route path="/security-training" element={<SecurityTraining />} />
+          <Route path="/incident-response" element={<IncidentResponse />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

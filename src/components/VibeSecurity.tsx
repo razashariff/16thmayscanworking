@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import YouTube from 'react-youtube';
@@ -8,6 +9,8 @@ const VibeSecurity = () => {
     width: '100%',
     playerVars: {
       autoplay: 0,
+      modestbranding: 1,
+      controls: 1,
     },
   };
 
@@ -69,11 +72,11 @@ const VibeSecurity = () => {
                 Get Started
               </Button>
               
-              <div className="w-full -m-2">
+              <div className="glass-panel overflow-hidden rounded-xl border border-cyber-purple/30">
                 <YouTube 
                   videoId="w4xKAwM1Ca8" 
                   opts={videoOptions}
-                  className="w-full"
+                  className="aspect-video"
                 />
               </div>
             </div>
