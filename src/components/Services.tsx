@@ -1,8 +1,6 @@
-
 import { ShieldCheck, Search, Code, Database, Zap, UserCheck } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const services = [
   {
@@ -130,6 +128,19 @@ const Services = () => {
     }
   };
 
+  const videoOptions = {
+    height: '480',
+    width: '270',
+    playerVars: {
+      autoplay: 0,
+      modestbranding: 1,
+      controls: 1,
+      showinfo: 0,
+      rel: 0,
+      title: 0
+    },
+  };
+
   return (
     <section id="services" className="py-20 relative overflow-hidden bg-cyber-dark">
       <div className="absolute inset-0 bg-cyber-grid opacity-10"></div>
@@ -146,7 +157,7 @@ const Services = () => {
           {services.map((service, index) => (
             <HoverCard key={index}>
               <HoverCardTrigger asChild>
-                <Link to={service.link} className="block transition-transform hover:scale-105">
+                <div className="block transition-transform hover:scale-105">
                   <Card className="bg-cyber-dark border border-cyber-blue/20 hover:border-cyber-neon/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyber-neon/10 h-full">
                     <CardHeader>
                       <div className="mb-4 p-3 inline-block rounded-lg bg-cyber-purple/10">
@@ -160,9 +171,9 @@ const Services = () => {
                       </CardDescription>
                     </CardContent>
                   </Card>
-                </Link>
+                </div>
               </HoverCardTrigger>
-              <HoverCardContent className="w-96 bg-cyber-dark/95 border border-cyber-neon/30 text-cyber-text">
+              <HoverCardContent className="w-96 bg-cyber-dark/95 border border-cyber-neon/30 backdrop-blur-md text-cyber-text">
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-cyber-neon">{service.hoverContent.subtitle}</h3>
                   <p className="text-sm text-cyber-muted">{service.hoverContent.details}</p>
