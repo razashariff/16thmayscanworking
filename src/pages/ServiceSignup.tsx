@@ -52,7 +52,23 @@ const ServiceSignup = () => {
     event.preventDefault();
     setIsLoading(true);
 
+    // Validate inputs
+    if (!email.trim()) {
+      toast.error("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!companyName.trim()) {
+      toast.error("Please enter your company name");
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // Show a loading toast to indicate payment is being initiated
+      toast.loading("Initiating payment process...");
+
       // Call the create-checkout edge function to get the checkout URL
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -62,7 +78,8 @@ const ServiceSignup = () => {
       });
 
       if (error) {
-        throw new Error(error.message);
+        console.error("Supabase function error:", error);
+        throw new Error(error.message || "Failed to initiate payment");
       }
 
       // Redirect to the Stripe checkout page
@@ -74,6 +91,7 @@ const ServiceSignup = () => {
       }
     } catch (error) {
       console.error('Payment initiation error:', error);
+      toast.dismiss(); // Dismiss the loading toast
       toast.error("There was a problem initiating your payment. Please try again.");
       setIsLoading(false);
     }

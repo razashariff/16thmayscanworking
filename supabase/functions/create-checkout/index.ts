@@ -85,12 +85,17 @@ serve(async (req) => {
 
     const price = await stripe.prices.create(priceData);
 
+    // The crucial change: append ?session_id={CHECKOUT_SESSION_ID} to the success_url
+    // This uses Stripe's special variable that gets replaced with the actual session ID
+    const origin = req.headers.get("origin") || "";
+    const success_url = `${origin}/payment-success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
+    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/payment-success?plan=${plan}`,
-      cancel_url: `${req.headers.get("origin")}/service-signup/${plan}`,
+      success_url: success_url,
+      cancel_url: `${origin}/service-signup/${plan}`,
       subscription_data: {
         metadata: {
           plan: plan,
