@@ -1,38 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
-import YouTube from 'react-youtube';
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useState } from 'react';
+import { Link } from "react-router-dom";
 
 const VibeSecurity = () => {
-  const [player, setPlayer] = useState<any>(null);
-  
-  const videoOptions = {
-    height: '480',
-    width: '270',
-    playerVars: {
-      autoplay: 0,
-      modestbranding: 1,
-      controls: 1,
-    },
-  };
-
-  const handleReady = (event: any) => {
-    setPlayer(event.target);
-  };
-
-  const handleMouseEnter = () => {
-    if (player) {
-      player.playVideo();
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (player) {
-      player.pauseVideo();
-    }
-  };
-
   return (
     <section className="relative min-h-screen pt-24 overflow-hidden">
       <div className="hero-gradient absolute inset-0 z-0"></div>
@@ -77,21 +48,15 @@ const VibeSecurity = () => {
             </div>
           </div>
           
-          <div className="flex flex-col space-y-4 ml-auto max-w-[480px]">
-            <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-4 py-2 w-full text-sm">
-              Get Started
-            </Button>
-            
-            <div 
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              <YouTube 
-                videoId="w4xKAwM1Ca8" 
-                opts={videoOptions}
-                onReady={handleReady}
-                className="w-full h-full"
-              />
+          <div className="flex flex-col space-y-6 ml-auto max-w-[480px]">
+            <div className="glass-panel p-8 rounded-xl">
+              <h3 className="text-2xl font-semibold mb-4">Not sure which service you need?</h3>
+              <p className="text-cyber-muted mb-6">Sign up for a free consultation with our security experts and get personalized recommendations for your project.</p>
+              <Link to="/auth">
+                <Button className="bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon text-white px-6 py-3 w-full">
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
