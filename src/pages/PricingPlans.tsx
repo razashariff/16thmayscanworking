@@ -62,7 +62,7 @@ const PricingPlans = () => {
   return (
     <div className="min-h-screen flex flex-col bg-cyber-dark text-cyber-text">
       <Navbar />
-      <div className="flex-grow container mx-auto px-4 pt-24 pb-12">
+      <div className="flex-grow container mx-auto px-4 pt-24 pb-12 flex flex-col justify-center">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="text-4xl font-bold mb-6 gradient-text">Security Review Plans</h1>
           <p className="text-lg text-cyber-muted">
@@ -70,7 +70,7 @@ const PricingPlans = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto flex-grow">
           {plans.map((plan, index) => (
             <Card
               key={index}

@@ -1,30 +1,23 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Card } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast"
 
 const ServiceSignup = () => {
-  const { plan } = useParams();
+  const { plan } = useParams<{ plan: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [productName, setProductName] = useState('');
-
-  const planDetails = {
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const plans = {
     basic: {
       name: "Basic Security Review",
-      price: "£20",
-      duration: "3 months minimum",
+      price: "£20 per month",
       features: [
         "Basic security review of your product/service",
         "Security rating assessment",
@@ -33,13 +26,12 @@ const ServiceSignup = () => {
       ]
     },
     premium: {
-      name: "Comprehensive Security Review",
-      price: "£30",
-      duration: "3 months minimum",
+      name: "Comprehensive Security Review", 
+      price: "£30 per month",
       features: [
         "Full detailed security review",
         "Everything in Basic plan",
-        "Advanced vulnerability assessment",
+        "Advanced vulnerability assessment", 
         "Detailed security recommendations",
         "Priority listing on our website",
         "Monthly security consultation",
@@ -47,134 +39,70 @@ const ServiceSignup = () => {
     }
   };
 
-  const selectedPlan = plan === 'premium' ? planDetails.premium : planDetails.basic;
+  const selectedPlan = plan === 'premium' ? plans.premium : plans.basic;
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            company_name: companyName,
-            product_name: productName,
-            subscription_plan: plan
-          }
-        }
-      });
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsLoading(true);
 
-      if (authError) throw authError;
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Create Stripe checkout session
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: { plan, email } // Pass email here to handle unauthenticated state
-      });
+    setIsLoading(false);
+    toast({
+      title: "Signup Complete.",
+      description: "Redirecting to payment...",
+    })
 
-      if (checkoutError) throw checkoutError;
-
-      if (checkoutData?.url) {
-        window.location.href = checkoutData.url;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "An error occurred during signup",
-      });
-    } finally {
-      setLoading(false);
-    }
+    navigate(`/payment-success?plan=${plan}`);
   };
 
   return (
-    <div className="min-h-screen bg-cyber-dark text-cyber-text">
+    <div className="min-h-screen flex flex-col bg-cyber-dark text-cyber-text">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6 gradient-text text-center">
-            Sign Up for {selectedPlan.name}
-          </h1>
-          
-          <Card className="glass-panel p-8 rounded-xl border border-cyber-neon/20 mb-8">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Plan Details</h2>
-                <div className="mb-4">
-                  <p className="text-3xl font-bold">{selectedPlan.price}<span className="text-sm text-cyber-muted"> /month</span></p>
-                  <p className="text-cyber-muted">{selectedPlan.duration}</p>
-                </div>
-                <ul className="space-y-2">
-                  {selectedPlan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <span className="text-cyber-neon">•</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Company Details</h2>
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div>
-                    <Label htmlFor="company-name">Company Name</Label>
-                    <Input
-                      id="company-name"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      required
-                      className="bg-cyber-dark border-cyber-neon/20"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="product-name">Product Name</Label>
-                    <Input
-                      id="product-name"
-                      value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
-                      required
-                      className="bg-cyber-dark border-cyber-neon/20"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="bg-cyber-dark border-cyber-neon/20"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="bg-cyber-dark border-cyber-neon/20"
-                    />
-                  </div>
-                  <Button 
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-cyber-blue to-cyber-neon hover:opacity-90 transition-opacity"
-                  >
-                    {loading ? "Processing..." : "Continue to Payment"}
-                  </Button>
-                </form>
-              </div>
+      <div className="flex-grow container mx-auto px-4 pt-24 pb-12 flex flex-col justify-center">
+        <div className="max-w-md mx-auto bg-cyber-dark/80 rounded-xl p-8 shadow-lg border border-cyber-neon/20">
+          <h2 className="text-2xl font-bold text-center mb-8 gradient-text">Sign Up for {selectedPlan.name}</h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                type="email" 
+                id="email" 
+                className="w-full bg-cyber-dark border-cyber-neon/30 text-cyber-text" 
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required 
+              />
             </div>
-          </Card>
+            <div>
+              <Label htmlFor="companyName">Company Name</Label>
+              <Input 
+                type="text" 
+                id="companyName" 
+                className="w-full bg-cyber-dark border-cyber-neon/30 text-cyber-text" 
+                placeholder="Company Name" 
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <ul className="list-disc pl-5 space-y-2 text-cyber-muted">
+                {selectedPlan.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing Up...' : `Proceed to Payment (${selectedPlan.price})`}
+            </Button>
+          </form>
         </div>
       </div>
       <Footer />
