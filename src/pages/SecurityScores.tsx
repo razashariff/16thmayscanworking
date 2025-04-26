@@ -132,14 +132,30 @@ const SecurityScores = () => {
   const getRatingColor = (rating: string) => {
     switch (rating) {
       case 'A':
-        return 'text-green-900 font-bold'; // Dark green for A ratings
+        return {
+          text: 'text-green-900 font-bold',
+          bg: 'bg-green-100',
+          iconColor: 'text-green-900'
+        };
       case 'B':
-        return 'text-orange-900 font-bold'; // Dark orange for B ratings
+        return {
+          text: 'text-orange-900 font-bold',
+          bg: 'bg-orange-100',
+          iconColor: 'text-orange-900'
+        };
       case 'C':
       case 'D':
-        return 'text-red-900 font-bold'; // Dark red for C and D ratings
+        return {
+          text: 'text-red-900 font-bold',
+          bg: 'bg-red-100',
+          iconColor: 'text-red-900'
+        };
       default:
-        return 'text-gray-900';
+        return {
+          text: 'text-gray-900',
+          bg: 'bg-gray-100',
+          iconColor: 'text-gray-900'
+        };
     }
   };
 
@@ -156,28 +172,34 @@ const SecurityScores = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {products.map((product, index) => (
-            <Card key={index} className={`glass-panel p-6 rounded-xl bg-gradient-to-br ${product.color} hover:scale-105 transition-transform duration-300`}>
-              <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
-              <p className="text-white/80 text-sm mb-2">{product.subtitle}</p>
-              <p className="text-white/90 mb-4">{product.description}</p>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  {product.rating === 'A' || product.rating === 'B' ? (
-                    <Star className={`h-5 w-5 ${getRatingColor(product.rating)}`} />
-                  ) : (
-                    <StarOff className={`h-5 w-5 ${getRatingColor(product.rating)}`} />
-                  )}
-                  <span className={`font-semibold ${getRatingColor(product.rating)}`}>
-                    Rating {product.rating}
-                  </span>
+          {products.map((product, index) => {
+            const ratingColors = getRatingColor(product.rating);
+            return (
+              <Card 
+                key={index} 
+                className={`glass-panel p-6 rounded-xl bg-gradient-to-br ${product.color} hover:scale-105 transition-transform duration-300`}
+              >
+                <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
+                <p className="text-white/80 text-sm mb-2">{product.subtitle}</p>
+                <p className="text-white/90 mb-4">{product.description}</p>
+                <div className="flex justify-between items-center">
+                  <div className={`flex items-center gap-2 ${ratingColors.bg} px-3 py-1 rounded-full`}>
+                    {product.rating === 'A' || product.rating === 'B' ? (
+                      <Star className={`h-5 w-5 ${ratingColors.iconColor}`} />
+                    ) : (
+                      <StarOff className={`h-5 w-5 ${ratingColors.iconColor}`} />
+                    )}
+                    <span className={`font-semibold ${ratingColors.text}`}>
+                      Rating {product.rating}
+                    </span>
+                  </div>
+                  <button className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md transition-colors duration-300">
+                    View Details
+                  </button>
                 </div>
-                <button className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md transition-colors duration-300">
-                  View Details
-                </button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </div>
       <Footer />
