@@ -27,44 +27,46 @@ const products = [
   }
 ];
 
-const ProductList = () => {
+const ProductList = ({ showSecurityButton = true }) => {
   return (
-    <div className="fixed right-0 top-1/2 -translate-y-1/2 space-y-4 p-6 z-50">
-      <div className="w-72 transform transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100 animate-float">
-        <div className="glass-panel p-6 rounded-xl animate-pulse-glow bg-gradient-to-r from-cyber-blue to-cyber-purple">
-          <div className="flex items-center gap-2 mb-3">
-            <Shield className="text-cyber-neon h-6 w-6" />
-            <h3 className="text-lg font-semibold text-white">Security Analysis</h3>
+    <div className="space-y-6 p-6">
+      {showSecurityButton && (
+        <div className="transform transition-all duration-500 ease-in-out hover:scale-105 opacity-90 hover:opacity-100">
+          <div className="glass-panel p-6 rounded-xl bg-gradient-to-r from-cyber-blue to-cyber-purple transition-all duration-500">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="text-cyber-neon h-6 w-6" />
+              <h3 className="text-lg font-semibold text-white">Security Analysis</h3>
+            </div>
+            <p className="text-sm text-white/80 mb-4">
+              See Security Scores for AI tooling and our reviews on key security features of the AI tools.
+            </p>
+            <Button 
+              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all duration-300"
+              asChild
+            >
+              <Link to="/security-scores">Security Scores</Link>
+            </Button>
           </div>
-          <p className="text-sm text-white/80 mb-4">
-            See Security Scores for AI tooling and our reviews on key security features of the AI tools.
-          </p>
-          <Button 
-            className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/20"
-            asChild
-          >
-            <Link to="/security-scores">Security Scores</Link>
-          </Button>
         </div>
-      </div>
+      )}
 
       {products.map((product, index) => (
         <div
           key={product.title}
-          className="w-72 transform transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100"
-          style={{ animationDelay: `${index * 150}ms` }}
+          className="transform transition-all duration-500 ease-in-out hover:scale-105 opacity-90 hover:opacity-100"
+          style={{ animationDelay: `${index * 200}ms` }}
         >
           <div 
-            className={`bg-gradient-to-r ${product.color} rounded-xl p-4 shadow-lg backdrop-blur-sm animate-fade-in`}
+            className={`bg-gradient-to-r ${product.color} rounded-xl p-6 shadow-lg backdrop-blur-sm transition-all duration-500`}
           >
             <h3 className="text-lg font-semibold text-white">{product.title}</h3>
             <p className="text-sm text-white/90 font-medium">{product.subtitle}</p>
-            <p className="mt-2 text-xs text-white/80">{product.description}</p>
+            <p className="mt-2 text-sm text-white/80">{product.description}</p>
             <Button 
-              className="mt-3 w-full bg-white/20 hover:bg-white/30 text-white border border-white/20"
+              className="mt-4 w-full bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all duration-300"
               asChild
             >
-              <Link to="#">{product.action}</Link>
+              <Link to="/security-scores">{product.action}</Link>
             </Button>
           </div>
         </div>
