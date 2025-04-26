@@ -7,21 +7,21 @@ const products = [
     title: "Databutton AI",
     subtitle: "AI-Built Software",
     description: "Full-Stack No Code Tool with Human Help. Your hunt for a CTO ends here.",
-    action: "Start Building",
+    action: "Security Scores",
     color: "from-emerald-400 to-teal-500"
   },
   {
     title: "CopyCoder",
     subtitle: "Clone Any Project",
     description: "Turn designs into code instantly! Create powerful prompts for AI coding tools.",
-    action: "Try CopyCoder",
+    action: "Security Scores",
     color: "from-indigo-400 to-purple-500"
   },
   {
     title: "Sofgen AI",
     subtitle: "Automate Everything",
     description: "No-code AI automation! Build AI-powered workflows effortlessly.",
-    action: "Unlock AI Automation",
+    action: "Security Scores",
     color: "from-fuchsia-400 to-pink-500"
   }
 ];
