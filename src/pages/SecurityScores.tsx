@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -77,6 +76,54 @@ const products = [
     action: "Security Scores",
     color: "from-sky-400 to-blue-500",
     rating: "C"
+  },
+  {
+    title: "ExpertAI Solutions",
+    subtitle: "AI Consulting Platform",
+    description: "Comprehensive AI strategy and implementation services for enterprises.",
+    action: "Security Scores",
+    color: "from-green-200 to-green-400",
+    rating: "A"
+  },
+  {
+    title: "IntelliCode Pro",
+    subtitle: "Advanced Code Generation",
+    description: "AI-powered code generation with enterprise-level security protocols.",
+    action: "Security Scores",
+    color: "from-amber-200 to-amber-400",
+    rating: "B"
+  },
+  {
+    title: "RiskGuard AI",
+    subtitle: "Security Risk Assessment",
+    description: "Automated AI security risk analysis and mitigation strategies.",
+    action: "Security Scores",
+    color: "from-red-200 to-red-400",
+    rating: "C"
+  },
+  {
+    title: "SecureFlow AI",
+    subtitle: "Compliance Automation",
+    description: "AI-driven security compliance tracking and reporting.",
+    action: "Security Scores",
+    color: "from-red-300 to-red-500",
+    rating: "D"
+  },
+  {
+    title: "SafeNet Intelligence",
+    subtitle: "Threat Detection AI",
+    description: "Real-time AI-powered cybersecurity threat detection system.",
+    action: "Security Scores",
+    color: "from-green-300 to-green-500",
+    rating: "A"
+  },
+  {
+    title: "CodeShield",
+    subtitle: "Security Code Review",
+    description: "Automated AI-driven security code review and vulnerability detection.",
+    action: "Security Scores",
+    color: "from-amber-300 to-amber-500",
+    rating: "B"
   }
 ];
 
@@ -84,15 +131,15 @@ const SecurityScores = () => {
   const getRatingColor = (rating: string) => {
     switch (rating) {
       case 'A':
-        return 'text-white font-bold'; // High contrast white for A ratings
+        return 'text-green-900 font-bold'; // Dark green text for A ratings
       case 'B':
-        return 'text-white font-bold'; // High contrast white for B ratings
+        return 'text-amber-900 font-bold'; // Dark amber text for B ratings
       case 'C':
-        return 'text-yellow-200'; // Bright yellow for C ratings
+        return 'text-red-900 font-bold'; // Dark red text for C ratings
       case 'D':
-        return 'text-red-300'; // Bright red for D ratings
+        return 'text-red-900 font-bold'; // Dark red text for D ratings
       default:
-        return 'text-gray-300';
+        return 'text-gray-900';
     }
   };
 
