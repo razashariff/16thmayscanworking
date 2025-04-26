@@ -27,6 +27,27 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_name: string | null
@@ -157,6 +178,7 @@ export type Database = {
       posts: {
         Row: {
           author_name: string | null
+          category_id: string | null
           content: string
           created_at: string
           id: string
@@ -167,6 +189,7 @@ export type Database = {
         }
         Insert: {
           author_name?: string | null
+          category_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -177,6 +200,7 @@ export type Database = {
         }
         Update: {
           author_name?: string | null
+          category_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -185,7 +209,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
