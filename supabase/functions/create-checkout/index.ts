@@ -88,7 +88,7 @@ serve(async (req) => {
       customer: customerId,
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/payment-success`,
+      success_url: `${req.headers.get("origin")}/payment-success?plan=${plan}`,
       cancel_url: `${req.headers.get("origin")}/service-signup/${plan}`,
       subscription_data: {
         metadata: {

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -5,7 +6,13 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner";
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+);
 
 const ServiceSignup = () => {
   const { plan } = useParams<{ plan: string }>();
@@ -45,16 +52,30 @@ const ServiceSignup = () => {
     event.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Call the create-checkout edge function to get the checkout URL
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          plan: plan,
+          email: email
+        }
+      });
 
-    setIsLoading(false);
-    toast({
-      title: "Signup Complete.",
-      description: "Redirecting to payment...",
-    })
+      if (error) {
+        throw new Error(error.message);
+      }
 
-    navigate(`/payment-success?plan=${plan}`);
+      // Redirect to the Stripe checkout page
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL was returned');
+      }
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      toast.error("There was a problem initiating your payment. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -100,7 +121,7 @@ const ServiceSignup = () => {
               className="w-full bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing Up...' : `Proceed to Payment (${selectedPlan.price})`}
+              {isLoading ? 'Processing...' : `Proceed to Payment (${selectedPlan.price})`}
             </Button>
           </form>
         </div>
