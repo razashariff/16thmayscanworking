@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -54,18 +53,18 @@ const VibeSecurity = () => {
           <div className="flex flex-col space-y-6 ml-auto max-w-[480px]">
             {/* Sign up box */}
             <div className="glass-panel p-8 rounded-xl hover:scale-105 transition-transform duration-300 hover:shadow-lg hover:shadow-cyber-neon/20 bg-gradient-to-br from-[#6C63FF] via-[#3E54D3] to-[#00F5FF] border-2 border-white/30 animate-pulse-glow">
-              <h3 className="text-2xl font-semibold mb-4 text-white">Sign-up to CyberAI Army</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-white">Sign-up to Cybersec AI Army</h3>
               <p className="text-white/90 mb-6">Let us know about your issue. This community is our place to ensure your AI Innovation is Security-centric and your brand is protected. Be a Secure Founder now and join us!</p>
               <Link to="/auth">
                 <Button className="bg-white text-[#3E54D3] hover:bg-white/90 px-6 py-3 w-full font-semibold transition-all duration-300 hover:scale-[1.02]">
-                  Sign-up to CyberAI Army
+                  Sign-up to Cybersec AI Army
                 </Button>
               </Link>
             </div>
 
             {/* Security Analysis box */}
             <div className="transform transition-all duration-500 ease-in-out hover:scale-105 opacity-90 hover:opacity-100">
-              <div className="glass-panel p-6 rounded-xl bg-gradient-to-r from-cyber-blue to-cyber-purple transition-all duration-500">
+              <div className="glass-panel p-6 rounded-xl bg-gradient-to-r from-cyber-blue to-cyber-purple transition-all duration-500 w-1/2">
                 <div className="flex items-center gap-2 mb-3">
                   <Shield className="text-cyber-neon h-6 w-6" />
                   <h3 className="text-lg font-semibold text-white">Security Analysis</h3>
@@ -84,8 +83,6 @@ const VibeSecurity = () => {
           </div>
         </div>
       </div>
-
-      <ProductList />
     </section>
   );
 };
