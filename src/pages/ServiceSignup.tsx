@@ -9,10 +9,17 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL || '',
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-);
+// Initialize Supabase with proper error handling
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Only create the client if both URL and key are available
+let supabase;
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  console.error("Supabase credentials missing. Please check your environment variables.");
+}
 
 const ServiceSignup = () => {
   const { plan } = useParams<{ plan: string }>();
@@ -65,9 +72,16 @@ const ServiceSignup = () => {
       return;
     }
 
+    // Check if Supabase is initialized
+    if (!supabase) {
+      toast.error("Unable to connect to backend services. Please try again later.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Show a loading toast to indicate payment is being initiated
-      toast.loading("Initiating payment process...");
+      const toastId = toast.loading("Initiating payment process...");
 
       // Call the create-checkout edge function to get the checkout URL
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -85,13 +99,14 @@ const ServiceSignup = () => {
       // Redirect to the Stripe checkout page
       if (data?.url) {
         console.log("Redirecting to Stripe checkout URL:", data.url);
+        toast.dismiss(toastId);
         window.location.href = data.url;
       } else {
         throw new Error('No checkout URL was returned');
       }
     } catch (error) {
       console.error('Payment initiation error:', error);
-      toast.dismiss(); // Dismiss the loading toast
+      toast.dismiss(); // Dismiss any loading toasts
       toast.error("There was a problem initiating your payment. Please try again.");
       setIsLoading(false);
     }

@@ -14,28 +14,49 @@ const PaymentSuccess = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [isValidPayment, setIsValidPayment] = useState(false);
   const currentDate = new Date().toLocaleString();
+  
   const searchParams = new URLSearchParams(location.search);
   const plan = searchParams.get('plan') || 'Basic';
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
+    console.log("Payment Success page loaded with params:", { plan, sessionId });
+    
     // If no session_id is present, the user likely navigated here directly
     // which means they didn't complete a payment
     if (!sessionId) {
+      console.error("No session_id found in URL");
       setIsVerifying(false);
       setIsValidPayment(false);
       toast.error("Invalid payment session. Please complete payment first.");
+      
+      // Delay navigation to home to allow user to see the error
       setTimeout(() => {
         navigate('/');
       }, 3000);
       return;
     }
 
-    // If we have a session_id, assume the payment was successful
+    // Check if session_id matches the expected format for a Stripe session ID
+    // Stripe session IDs typically start with 'cs_' for checkout sessions
+    if (!sessionId.startsWith('cs_')) {
+      console.error("Invalid session_id format:", sessionId);
+      setIsVerifying(false);
+      setIsValidPayment(false);
+      toast.error("Invalid payment session identifier");
+      
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
+      return;
+    }
+
+    // If we have a valid-looking session_id, assume the payment was successful
     // In a production environment, you would verify this with Stripe
+    console.log("Valid session_id found, marking payment as successful");
     setIsVerifying(false);
     setIsValidPayment(true);
-  }, [sessionId, navigate]);
+  }, [sessionId, navigate, plan]);
 
   const getPlanDetails = (planType: string) => {
     switch(planType.toLowerCase()) {
