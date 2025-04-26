@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,13 @@ const Navbar = () => {
               onClick={() => handleNavigation('/')}
             >
               Home
+            </Link>
+            <Link 
+              to="/blog" 
+              className={`transition-colors ${isActive('/blog') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}
+              onClick={() => handleNavigation('/blog')}
+            >
+              Blog
             </Link>
             <Link 
               to="/services" 
@@ -92,6 +100,16 @@ const Navbar = () => {
               }}
             >
               Home
+            </Link>
+            <Link 
+              to="/blog" 
+              className={`px-2 py-2 rounded-md ${isActive('/blog') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} 
+              onClick={() => {
+                handleNavigation('/blog');
+                toggleMenu();
+              }}
+            >
+              Blog
             </Link>
             <Link 
               to="/services" 

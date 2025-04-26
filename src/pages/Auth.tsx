@@ -71,7 +71,7 @@ const Auth = () => {
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/");
+        navigate("/blog");  // Changed from "/" to "/blog" to redirect to blog page
       }
     } catch (error: any) {
       toast({
@@ -86,7 +86,7 @@ const Auth = () => {
   };
 
   const navigateToHome = () => {
-    navigate("/");
+    navigate("/blog");  // Changed from "/" to "/blog"
   };
 
   // Registration success screen
@@ -112,7 +112,7 @@ const Auth = () => {
               onClick={navigateToHome}
               className="w-full bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon"
             >
-              Return to Home
+              Return to Blog
             </Button>
           </CardFooter>
         </Card>
