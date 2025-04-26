@@ -63,25 +63,28 @@ const PaymentSuccess = () => {
 
           <div className="space-y-6 text-cyber-text mb-8">
             <p className="leading-relaxed">
-              Thank you for signing up with CyberSec AI Services. We are excited to have you on board.
-              Shortly, you will receive our on-boarding email along with an engagement pack outlining
+              Thank you for signing up with CyberSec AI Services. We are excited to have you on board. 
+              Shortly, you will receive our on-boarding email along with an engagement pack outlining 
               the next steps.
             </p>
             
             <p className="leading-relaxed">
-              As part of our commitment to cybersecurity excellence, particularly in assessment and
+              As part of our commitment to cybersecurity excellence, particularly in assessment and 
               ratings review, we prioritize secure communications from the outset.
             </p>
             
             <p className="leading-relaxed">
-              Please note that for security reasons, we do not request information about your products
-              or services via email at this stage. Instead, preferred communication methods will be
+              Please note that for security reasons, we do not request information about your products 
+              or services via email at this stage. Instead, preferred communication methods will be 
               discussed and confirmed during the initial onboarding.
             </p>
             
-            <p className="leading-relaxed font-medium">
-              Thank you for choosing CyberSec AI Services — we look forward to helping you strengthen
-              your cybersecurity posture.
+            <p className="leading-relaxed">
+              Thank you for choosing CyberSec AI Services — we look forward to helping you strengthen 
+              your cybersecurity posture and protecting your brand as well as your and your clients data. 
+              As part of the process we will send you a Non-Disclosure Document. This is a standard part 
+              of our process and security governance. We never discuss any aspect of your product or 
+              service specifics with any third party.
             </p>
           </div>
 
