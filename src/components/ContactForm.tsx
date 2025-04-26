@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,8 +14,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters"),
@@ -58,11 +58,7 @@ const ContactForm = () => {
       navigate('/contact/thank-you');
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "There was a problem submitting your form. Please try again.",
-      });
+      toast.error("There was a problem submitting your form. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
