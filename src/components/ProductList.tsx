@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
@@ -49,28 +48,6 @@ const ProductList = ({ showSecurityButton = true }) => {
           </div>
         </div>
       )}
-
-      {products.map((product, index) => (
-        <div
-          key={product.title}
-          className="transform transition-all duration-500 ease-in-out hover:scale-105 opacity-90 hover:opacity-100"
-          style={{ animationDelay: `${index * 200}ms` }}
-        >
-          <div 
-            className={`bg-gradient-to-r ${product.color} rounded-xl p-6 shadow-lg backdrop-blur-sm transition-all duration-500`}
-          >
-            <h3 className="text-lg font-semibold text-white">{product.title}</h3>
-            <p className="text-sm text-white/90 font-medium">{product.subtitle}</p>
-            <p className="mt-2 text-sm text-white/80">{product.description}</p>
-            <Button 
-              className="mt-4 w-full bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all duration-300"
-              asChild
-            >
-              <Link to="/security-scores">{product.action}</Link>
-            </Button>
-          </div>
-        </div>
-      ))}
     </div>
   );
 };
