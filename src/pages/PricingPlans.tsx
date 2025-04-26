@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -59,9 +60,9 @@ const PricingPlans = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-cyber-dark text-cyber-text">
+    <div className="min-h-screen flex flex-col bg-cyber-dark text-cyber-text">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-12">
+      <div className="flex-grow container mx-auto px-4 pt-24 pb-12">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h1 className="text-4xl font-bold mb-6 gradient-text">Security Review Plans</h1>
           <p className="text-lg text-cyber-muted">
@@ -73,7 +74,7 @@ const PricingPlans = () => {
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative glass-panel p-8 rounded-xl border flex flex-col ${
+              className={`relative flex flex-col glass-panel p-8 rounded-xl border ${
                 plan.highlighted
                   ? "border-cyber-neon animate-pulse-glow"
                   : "border-cyber-neon/20"
@@ -88,7 +89,7 @@ const PricingPlans = () => {
                 <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
                 <div className="mb-4">
                   <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-cyber-muted ml-2">{plan.period}</span>
+                  {plan.period && <span className="text-cyber-muted ml-2">{plan.period}</span>}
                 </div>
                 {plan.duration && <p className="text-sm text-cyber-muted">{plan.duration}</p>}
                 {plan.isEnterprise && (
@@ -107,7 +108,7 @@ const PricingPlans = () => {
                 ))}
               </ul>
 
-              <div className="mt-auto">
+              <div className="mt-auto pt-6">
                 <Button
                   asChild
                   className={`w-full ${
