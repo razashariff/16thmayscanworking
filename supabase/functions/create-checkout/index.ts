@@ -67,8 +67,7 @@ serve(async (req) => {
         unit_amount: 2000, // £20.00
         recurring: { interval: "month" },
         product_data: { 
-          name: "Basic Security Review",
-          description: "Basic security review of your product/service with 3 months rating listing"
+          name: "Basic Security Review"
         }
       };
     } else if (plan === "premium") {
@@ -77,8 +76,7 @@ serve(async (req) => {
         unit_amount: 3000, // £30.00
         recurring: { interval: "month" },
         product_data: { 
-          name: "Comprehensive Security Review",
-          description: "Full detailed security review with everything in Basic plan"
+          name: "Comprehensive Security Review"
         }
       };
     } else {
@@ -109,6 +107,7 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
+    console.error("Stripe error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
