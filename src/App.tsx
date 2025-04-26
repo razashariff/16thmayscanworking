@@ -23,6 +23,7 @@ import SecurityScores from "./pages/SecurityScores";
 import PricingPlans from "./pages/PricingPlans";
 import ServiceSignup from "./pages/ServiceSignup";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import ContactThankYou from "./pages/ContactThankYou";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/pricing" element={<PricingPlans />} />
           <Route path="/service-signup/:plan" element={<ServiceSignup />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/contact/thank-you" element={<ContactThankYou />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

@@ -83,6 +83,36 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          company_email: string
+          company_name: string
+          created_at: string
+          enquiry_details: string
+          id: string
+          person_name: string
+          position: string
+        }
+        Insert: {
+          company_email: string
+          company_name: string
+          created_at?: string
+          enquiry_details: string
+          id?: string
+          person_name: string
+          position: string
+        }
+        Update: {
+          company_email?: string
+          company_name?: string
+          created_at?: string
+          enquiry_details?: string
+          id?: string
+          person_name?: string
+          position?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
