@@ -7,34 +7,34 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import BlogPost from "@/components/BlogPost";
 import CreatePostDialog from "@/components/CreatePostDialog";
-import BlogCategories from "@/components/BlogCategories";
+import BlogSearch from "@/components/BlogSearch";
 import { Rocket } from "lucide-react";
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (query = "") => {
     try {
-      let query = supabase
+      setIsLoading(true);
+      let supabaseQuery = supabase
         .from("posts")
         .select(`
           *,
           likes(count),
-          comments(count),
-          categories(id, name, slug)
+          comments(count)
         `)
         .order("created_at", { ascending: false });
 
-      if (selectedCategory) {
-        query = query.eq("categories.slug", selectedCategory);
+      if (query) {
+        supabaseQuery = supabaseQuery.ilike("title", `%${query}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await supabaseQuery;
 
       if (error) throw error;
       setPosts(data || []);
@@ -50,12 +50,12 @@ const Blog = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, [selectedCategory]);
+    fetchPosts(searchQuery);
+  }, [searchQuery]);
 
   const handlePostCreated = () => {
     setIsCreatePostOpen(false);
-    fetchPosts();
+    fetchPosts(searchQuery);
   };
 
   return (
@@ -84,24 +84,21 @@ const Blog = () => {
           </div>
         </div>
 
-        {/* Categories section */}
-        <BlogCategories
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-        />
+        {/* Search section */}
+        <BlogSearch onSearch={setSearchQuery} />
 
         <div className="grid gap-8 max-w-4xl mx-auto">
           {isLoading ? (
             <div className="text-center text-cyber-muted">Loading posts...</div>
           ) : posts.length === 0 ? (
             <div className="text-center text-cyber-muted">
-              {selectedCategory 
-                ? "No posts found in this category. Be the first to share!"
+              {searchQuery 
+                ? "No posts found matching your search. Try a different query!"
                 : "No posts yet. Be the first to share!"}
             </div>
           ) : (
             posts.map((post) => (
-              <BlogPost key={post.id} post={post} onUpdate={fetchPosts} />
+              <BlogPost key={post.id} post={post} onUpdate={() => fetchPosts(searchQuery)} />
             ))
           )}
         </div>
