@@ -84,15 +84,15 @@ const SecurityScores = () => {
   const getRatingColor = (rating: string) => {
     switch (rating) {
       case 'A':
-        return 'text-emerald-400';
+        return 'text-white font-bold'; // High contrast white for A ratings
       case 'B':
-        return 'text-blue-400';
+        return 'text-white font-bold'; // High contrast white for B ratings
       case 'C':
-        return 'text-amber-400';
+        return 'text-yellow-200'; // Bright yellow for C ratings
       case 'D':
-        return 'text-red-400';
+        return 'text-red-300'; // Bright red for D ratings
       default:
-        return 'text-gray-400';
+        return 'text-gray-300';
     }
   };
 
