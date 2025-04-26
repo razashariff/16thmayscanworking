@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,17 +9,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase with proper error handling
+// Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Only create the client if both URL and key are available
-let supabase;
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-} else {
-  console.error("Supabase credentials missing. Please check your environment variables.");
-}
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ServiceSignup = () => {
   const { plan } = useParams<{ plan: string }>();
@@ -54,6 +47,11 @@ const ServiceSignup = () => {
   };
 
   const selectedPlan = plan === 'premium' ? plans.premium : plans.basic;
+  
+  useEffect(() => {
+    // Log to verify component is rendering properly
+    console.log('ServiceSignup rendered with plan:', plan);
+  }, [plan]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -72,42 +70,42 @@ const ServiceSignup = () => {
       return;
     }
 
-    // Check if Supabase is initialized
-    if (!supabase) {
-      toast.error("Unable to connect to backend services. Please try again later.");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // Show a loading toast to indicate payment is being initiated
-      const toastId = toast.loading("Initiating payment process...");
-
-      // Call the create-checkout edge function to get the checkout URL
+      console.log('Initiating payment process for plan:', plan);
+      toast.loading("Initiating payment process...", { id: "payment-process" });
+      
+      // Call the create-checkout edge function
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          plan: plan,
-          email: email
-        }
+        body: { plan, email }
       });
 
       if (error) {
-        console.error("Supabase function error:", error);
-        throw new Error(error.message || "Failed to initiate payment");
+        console.error("Checkout function error:", error);
+        toast.error(`Payment initiation failed: ${error.message}`);
+        setIsLoading(false);
+        return;
       }
 
-      // Redirect to the Stripe checkout page
-      if (data?.url) {
-        console.log("Redirecting to Stripe checkout URL:", data.url);
-        toast.dismiss(toastId);
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL was returned');
+      if (!data?.url) {
+        console.error("No checkout URL returned:", data);
+        toast.error("Could not create checkout session");
+        setIsLoading(false);
+        return;
       }
+
+      console.log("Redirecting to checkout URL:", data.url);
+      toast.dismiss("payment-process");
+      toast.success("Redirecting to payment page...");
+      
+      // Use a small timeout to ensure the toast is seen before redirecting
+      setTimeout(() => {
+        window.location.href = data.url;
+      }, 1000);
+      
     } catch (error) {
-      console.error('Payment initiation error:', error);
-      toast.dismiss(); // Dismiss any loading toasts
-      toast.error("There was a problem initiating your payment. Please try again.");
+      console.error('Payment process error:', error);
+      toast.dismiss("payment-process");
+      toast.error("Payment process failed. Please try again.");
       setIsLoading(false);
     }
   };

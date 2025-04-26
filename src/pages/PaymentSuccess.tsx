@@ -23,17 +23,16 @@ const PaymentSuccess = () => {
     console.log("Payment Success page loaded with params:", { plan, sessionId });
     
     // If no session_id is present, the user likely navigated here directly
-    // which means they didn't complete a payment
     if (!sessionId) {
       console.error("No session_id found in URL");
       setIsVerifying(false);
       setIsValidPayment(false);
       toast.error("Invalid payment session. Please complete payment first.");
       
-      // Delay navigation to home to allow user to see the error
+      // Delay navigation to home
       setTimeout(() => {
         navigate('/');
-      }, 3000);
+      }, 5000);
       return;
     }
 
@@ -47,18 +46,19 @@ const PaymentSuccess = () => {
       
       setTimeout(() => {
         navigate('/');
-      }, 3000);
+      }, 5000);
       return;
     }
 
     // If we have a valid-looking session_id, assume the payment was successful
-    // In a production environment, you would verify this with Stripe
-    console.log("Valid session_id found, marking payment as successful");
+    // In a production environment, you would verify this with a server-side call to Stripe
+    console.log("Valid session_id found, marking payment as successful:", sessionId);
     setIsVerifying(false);
     setIsValidPayment(true);
+    toast.success("Payment successful! Welcome aboard.");
   }, [sessionId, navigate, plan]);
 
-  const getPlanDetails = (planType: string) => {
+  const getPlanDetails = (planType) => {
     switch(planType.toLowerCase()) {
       case 'basic':
         return {
@@ -74,7 +74,7 @@ const PaymentSuccess = () => {
         };
       default:
         return {
-          name: planType,
+          name: planType || "Unknown plan",
           price: "Custom pricing",
           duration: "Custom duration"
         };
@@ -91,6 +91,7 @@ const PaymentSuccess = () => {
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-4 gradient-text">Verifying your payment...</h2>
             <div className="animate-spin w-12 h-12 border-4 border-t-cyber-neon rounded-full mx-auto"></div>
+            <p className="mt-4 text-cyber-muted">This will only take a moment</p>
           </div>
         </div>
         <Footer />
@@ -111,6 +112,12 @@ const PaymentSuccess = () => {
               <h2 className="text-2xl font-semibold mb-2">Invalid Payment Session</h2>
               <p className="text-cyber-muted mb-4">You must complete the payment process first.</p>
               <p className="text-cyber-muted mb-4">Redirecting to home page...</p>
+              <Button 
+                onClick={() => navigate('/')}
+                className="mt-4 bg-gradient-to-r from-cyber-blue to-cyber-neon"
+              >
+                Return to Home
+              </Button>
             </div>
           </Card>
         </div>
@@ -130,6 +137,7 @@ const PaymentSuccess = () => {
             </div>
             <h1 className="text-3xl font-bold mb-4 gradient-text">Payment Successful!</h1>
             <p className="text-cyber-muted text-sm mb-2">Order Date: {currentDate}</p>
+            <p className="text-cyber-muted text-sm mb-2">Session ID: {sessionId}</p>
           </div>
 
           <div className="bg-cyber-neon/5 rounded-lg p-6 mb-8 border border-cyber-neon/10">

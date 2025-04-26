@@ -9,65 +9,50 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log("Create checkout function initiated");
+    
+    // Parse request body
     const { plan, email } = await req.json();
     console.log(`Request received - Plan: ${plan}, Email: ${email}`);
     
-    if (!plan) throw new Error("Plan is required");
+    if (!plan) {
+      throw new Error("Plan is required");
+    }
+
+    if (!email) {
+      throw new Error("Email is required");
+    }
 
     // Initialize Stripe
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("Stripe key not configured");
+    if (!stripeKey) {
+      console.error("Stripe key not configured");
+      throw new Error("Payment service not configured");
+    }
     
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
     console.log("Stripe initialized successfully");
-
-    // Get user email either from request body or from auth header
-    let userEmail = email;
     
-    if (!userEmail) {
-      // Try to get from auth header if available
-      try {
-        // Create Supabase client
-        const supabaseClient = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-        );
-
-        const authHeader = req.headers.get("Authorization")!;
-        const token = authHeader.replace("Bearer ", "");
-        const { data: { user } } = await supabaseClient.auth.getUser(token);
-        if (user?.email) {
-          userEmail = user.email;
-          console.log(`Retrieved email from auth: ${userEmail}`);
-        }
-      } catch (authError) {
-        console.error("Authentication error:", authError);
-        // Continue with email from request body if auth fails
-      }
-    }
-
-    if (!userEmail) throw new Error("User email is required");
-    console.log(`Using email: ${userEmail}`);
-
     // Check if customer exists
-    console.log("Checking if customer exists in Stripe");
-    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+    console.log(`Checking if customer exists for email: ${email}`);
+    const customers = await stripe.customers.list({ email: email, limit: 1 });
     let customerId;
+    
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       console.log(`Found existing customer: ${customerId}`);
     } else {
       // Create a new customer
       console.log("Creating new customer in Stripe");
-      const customer = await stripe.customers.create({ email: userEmail });
+      const customer = await stripe.customers.create({ email: email });
       customerId = customer.id;
       console.log(`Created new customer: ${customerId}`);
     }
@@ -75,6 +60,7 @@ serve(async (req) => {
     // Create Stripe Checkout Session based on the plan
     console.log(`Creating price for plan: ${plan}`);
     let priceData;
+    
     if (plan === "basic") {
       priceData = {
         currency: "gbp",
@@ -100,8 +86,12 @@ serve(async (req) => {
     const price = await stripe.prices.create(priceData);
     console.log(`Created price with ID: ${price.id}`);
 
-    // Use Stripe's special variable {CHECKOUT_SESSION_ID} which will be replaced with the actual session ID
+    // Get origin for success and cancel URLs
     const origin = req.headers.get("origin") || "";
+    console.log(`Request origin: ${origin}`);
+    
+    // IMPORTANT: Use Stripe's placeholder which will be replaced with the actual session ID
+    // The placeholder MUST be exactly {CHECKOUT_SESSION_ID}
     const success_url = `${origin}/payment-success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
     console.log(`Success URL configured as: ${success_url}`);
     
@@ -119,6 +109,7 @@ serve(async (req) => {
       },
       metadata: {
         plan: plan,
+        email: email,
       }
     });
 
