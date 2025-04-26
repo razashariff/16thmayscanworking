@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Shield } from "lucide-react";
 
 const products = [
   {
@@ -29,6 +30,24 @@ const products = [
 const ProductList = () => {
   return (
     <div className="fixed right-0 top-1/2 -translate-y-1/2 space-y-4 p-6 z-50">
+      <div className="w-72 transform transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100 animate-float">
+        <div className="glass-panel p-6 rounded-xl animate-pulse-glow bg-gradient-to-r from-cyber-blue to-cyber-purple">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="text-cyber-neon h-6 w-6" />
+            <h3 className="text-lg font-semibold text-white">Security Analysis</h3>
+          </div>
+          <p className="text-sm text-white/80 mb-4">
+            See Security Scores for AI tooling and our reviews on key security features of the AI tools.
+          </p>
+          <Button 
+            className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/20"
+            asChild
+          >
+            <Link to="/security-scores">Security Scores</Link>
+          </Button>
+        </div>
+      </div>
+
       {products.map((product, index) => (
         <div
           key={product.title}

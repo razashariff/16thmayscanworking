@@ -19,6 +19,7 @@ import Terms from "./pages/Terms";
 import CookiePolicy from "./pages/CookiePolicy";
 import Auth from "./pages/Auth";
 import Blog from "./pages/Blog";
+import SecurityScores from "./pages/SecurityScores";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/security-scores" element={<SecurityScores />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
