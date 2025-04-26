@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import BlogPost from "@/components/BlogPost";
 import CreatePostDialog from "@/components/CreatePostDialog";
 import BlogSearch from "@/components/BlogSearch";
-import { Rocket } from "lucide-react";
+import { Rocket, LogOut } from "lucide-react";
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
@@ -58,13 +57,37 @@ const Blog = () => {
     fetchPosts(searchQuery);
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyber-dark via-[#1a1528] to-[#1f1f35] bg-fixed">
       <Navbar />
       <div className="container mx-auto px-4 py-16">
         <div className="relative mb-12 text-center">
           <div className="relative z-10">
-            <h1 className="text-5xl font-bold gradient-text mb-4">VibeCoding Community Blog</h1>
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-5xl font-bold gradient-text">VibeCoding Community Blog</h1>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="text-cyber-text hover:text-cyber-neon flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </div>
             <p className="text-cyber-text text-xl mb-8 max-w-2xl mx-auto">
               Latest security news, updates, and community discussions about AI and cybersecurity
             </p>
@@ -77,14 +100,12 @@ const Blog = () => {
             </Button>
           </div>
           
-          {/* Decorative background elements */}
           <div className="absolute inset-0 -z-10 opacity-10">
             <div className="absolute top-0 left-1/4 w-64 h-64 bg-cyber-purple rounded-full filter blur-[100px]" />
             <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-cyber-neon rounded-full filter blur-[100px]" />
           </div>
         </div>
 
-        {/* Search section */}
         <BlogSearch onSearch={setSearchQuery} />
 
         <div className="grid gap-8 max-w-4xl mx-auto">
