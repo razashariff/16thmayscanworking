@@ -28,7 +28,7 @@ const products = [
 
 const ProductList = () => {
   return (
-    <div className="fixed left-0 top-1/2 -translate-y-1/2 space-y-4 p-6">
+    <div className="fixed right-0 top-1/2 -translate-y-1/2 space-y-4 p-6 z-50">
       {products.map((product, index) => (
         <div
           key={product.title}
