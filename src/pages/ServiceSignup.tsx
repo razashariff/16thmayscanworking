@@ -9,17 +9,17 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 const ServiceSignup = () => {
   const { plan } = useParams<{ plan: string }>();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Initialize Supabase client
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
   
   const plans = {
     basic: {
@@ -49,7 +49,6 @@ const ServiceSignup = () => {
   const selectedPlan = plan === 'premium' ? plans.premium : plans.basic;
   
   useEffect(() => {
-    // Log to verify component is rendering properly
     console.log('ServiceSignup rendered with plan:', plan);
   }, [plan]);
 
@@ -74,13 +73,14 @@ const ServiceSignup = () => {
       console.log('Initiating payment process for plan:', plan);
       toast.loading("Initiating payment process...", { id: "payment-process" });
       
-      // Call the create-checkout edge function
+      // Call the create-checkout edge function with explicit error handling
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { plan, email }
       });
 
       if (error) {
         console.error("Checkout function error:", error);
+        toast.dismiss("payment-process");
         toast.error(`Payment initiation failed: ${error.message}`);
         setIsLoading(false);
         return;
@@ -88,12 +88,13 @@ const ServiceSignup = () => {
 
       if (!data?.url) {
         console.error("No checkout URL returned:", data);
+        toast.dismiss("payment-process");
         toast.error("Could not create checkout session");
         setIsLoading(false);
         return;
       }
 
-      console.log("Redirecting to checkout URL:", data.url);
+      console.log("Checkout URL received:", data.url);
       toast.dismiss("payment-process");
       toast.success("Redirecting to payment page...");
       

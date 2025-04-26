@@ -87,11 +87,11 @@ serve(async (req) => {
     console.log(`Created price with ID: ${price.id}`);
 
     // Get origin for success and cancel URLs
-    const origin = req.headers.get("origin") || "";
+    const origin = req.headers.get("origin") || "https://vibe-code-cyber-secure.lovable.app";
     console.log(`Request origin: ${origin}`);
     
     // IMPORTANT: Use Stripe's placeholder which will be replaced with the actual session ID
-    // The placeholder MUST be exactly {CHECKOUT_SESSION_ID}
+    // The placeholder MUST be exactly {CHECKOUT_SESSION_ID} for Stripe to replace it
     const success_url = `${origin}/payment-success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`;
     console.log(`Success URL configured as: ${success_url}`);
     
