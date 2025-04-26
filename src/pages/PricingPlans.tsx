@@ -21,6 +21,7 @@ const PricingPlans = () => {
       ],
       buttonText: "Get Started",
       duration: "3 months minimum",
+      path: "/service-signup/basic"
     },
     {
       name: "Comprehensive Security Review",
@@ -37,6 +38,7 @@ const PricingPlans = () => {
       buttonText: "Get Premium",
       duration: "3 months minimum",
       highlighted: true,
+      path: "/service-signup/premium"
     },
   ];
 
@@ -84,16 +86,18 @@ const PricingPlans = () => {
                 ))}
               </ul>
 
-              <Button
-                asChild
-                className={`w-full ${
-                  plan.highlighted
-                    ? "bg-gradient-to-r from-cyber-blue to-cyber-neon"
-                    : "bg-cyber-blue"
-                } hover:opacity-90 transition-opacity`}
-              >
-                <Link to="/auth">{plan.buttonText}</Link>
-              </Button>
+              <div className="mt-auto">
+                <Button
+                  asChild
+                  className={`w-full ${
+                    plan.highlighted
+                      ? "bg-gradient-to-r from-cyber-blue to-cyber-neon"
+                      : "bg-cyber-blue"
+                  } hover:opacity-90 transition-opacity`}
+                >
+                  <Link to={plan.path}>{plan.buttonText}</Link>
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
