@@ -86,7 +86,7 @@ const PricingPlans = () => {
                 ))}
               </ul>
 
-              <div className="mt-auto">
+              <div className="mt-auto pt-4">
                 <Button
                   asChild
                   className={`w-full ${

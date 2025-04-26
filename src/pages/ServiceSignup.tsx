@@ -2,14 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ServiceSignup = () => {
   const { plan } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,7 +54,7 @@ const ServiceSignup = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -62,18 +66,25 @@ const ServiceSignup = () => {
         }
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
 
-      // Redirect to Stripe checkout
-      const { data } = await supabase.functions.invoke('create-checkout', {
+      // Create Stripe checkout session
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: { plan }
       });
 
-      if (data?.url) {
-        window.location.href = data.url;
+      if (checkoutError) throw checkoutError;
+
+      if (checkoutData?.url) {
+        window.location.href = checkoutData.url;
       }
     } catch (error) {
       console.error('Error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "An error occurred during signup",
+      });
     } finally {
       setLoading(false);
     }
@@ -110,43 +121,45 @@ const ServiceSignup = () => {
                 <h2 className="text-2xl font-bold mb-4">Company Details</h2>
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Company Name</label>
-                    <input
-                      type="text"
+                    <Label htmlFor="company-name">Company Name</Label>
+                    <Input
+                      id="company-name"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       required
-                      className="w-full p-2 rounded bg-cyber-dark border border-cyber-neon/20 text-cyber-text"
+                      className="bg-cyber-dark border-cyber-neon/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Product Name</label>
-                    <input
-                      type="text"
+                    <Label htmlFor="product-name">Product Name</Label>
+                    <Input
+                      id="product-name"
                       value={productName}
                       onChange={(e) => setProductName(e.target.value)}
                       required
-                      className="w-full p-2 rounded bg-cyber-dark border border-cyber-neon/20 text-cyber-text"
+                      className="bg-cyber-dark border-cyber-neon/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <input
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full p-2 rounded bg-cyber-dark border border-cyber-neon/20 text-cyber-text"
+                      className="bg-cyber-dark border-cyber-neon/20"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Password</label>
-                    <input
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="w-full p-2 rounded bg-cyber-dark border border-cyber-neon/20 text-cyber-text"
+                      className="bg-cyber-dark border-cyber-neon/20"
                     />
                   </div>
                   <Button 
