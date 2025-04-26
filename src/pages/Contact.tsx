@@ -4,9 +4,9 @@ import Footer from "@/components/Footer";
 
 const ContactPage = () => {
   return (
-    <div className="min-h-screen bg-cyber-dark text-cyber-text">
+    <div className="min-h-screen flex flex-col bg-cyber-dark text-cyber-text">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 relative z-10">
+      <div className="flex-grow container mx-auto px-4 pt-24 relative z-10 flex flex-col justify-center">
         <div className="absolute inset-0 bg-cyber-grid opacity-5"></div>
         <div className="relative z-10">
           <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-8">Contact Us</h1>
@@ -19,3 +19,4 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
+
