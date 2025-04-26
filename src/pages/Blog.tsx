@@ -22,7 +22,12 @@ const Blog = () => {
     try {
       let query = supabase
         .from("posts")
-        .select("*, likes(count), comments(count), categories(name)")
+        .select(`
+          *,
+          likes(count),
+          comments(count),
+          categories(id, name, slug)
+        `)
         .order("created_at", { ascending: false });
 
       if (selectedCategory) {
@@ -89,7 +94,11 @@ const Blog = () => {
           {isLoading ? (
             <div className="text-center text-cyber-muted">Loading posts...</div>
           ) : posts.length === 0 ? (
-            <div className="text-center text-cyber-muted">No posts yet. Be the first to share!</div>
+            <div className="text-center text-cyber-muted">
+              {selectedCategory 
+                ? "No posts found in this category. Be the first to share!"
+                : "No posts yet. Be the first to share!"}
+            </div>
           ) : (
             posts.map((post) => (
               <BlogPost key={post.id} post={post} onUpdate={fetchPosts} />

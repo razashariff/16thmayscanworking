@@ -26,6 +26,7 @@ const CreatePostDialog = ({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -44,6 +45,26 @@ const CreatePostDialog = ({
     }
   }, [open]);
 
+  const createCategory = async (name: string) => {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ name, slug })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create category",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    return data;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -55,10 +76,19 @@ const CreatePostDialog = ({
 
       if (!user) throw new Error("Please login to create a post");
 
+      let finalCategoryId = categoryId;
+
+      if (newCategory && !categoryId) {
+        const category = await createCategory(newCategory);
+        if (category) {
+          finalCategoryId = category.id;
+        }
+      }
+
       const { error } = await supabase.from("posts").insert({
         title,
         content,
-        category_id: categoryId || null,
+        category_id: finalCategoryId || null,
         user_id: user.id,
         author_name: user.email?.split("@")[0],
       });
@@ -73,6 +103,7 @@ const CreatePostDialog = ({
       setTitle("");
       setContent("");
       setCategoryId("");
+      setNewCategory("");
       onPostCreated();
     } catch (error: any) {
       toast({
@@ -102,20 +133,31 @@ const CreatePostDialog = ({
             />
           </div>
           <div className="space-y-2">
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger className="bg-cyber-dark/50 border-cyber-purple/20">
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {categories.map((category: any) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger className="bg-cyber-dark/50 border-cyber-purple/20">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {categories.map((category: any) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="Or create a new category"
+                value={newCategory}
+                onChange={(e) => {
+                  setNewCategory(e.target.value);
+                  setCategoryId(''); // Clear selected category when typing new one
+                }}
+                className="bg-cyber-dark/50 border-cyber-purple/20"
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Textarea

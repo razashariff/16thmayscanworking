@@ -20,10 +20,27 @@ const BlogCategories = ({ selectedCategory, onCategorySelect }: BlogCategoriesPr
   useEffect(() => {
     const fetchCategories = async () => {
       const { data } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name");
-      if (data) setCategories(data);
+        .from("posts")
+        .select(`
+          categories (
+            id,
+            name,
+            slug
+          )
+        `)
+        .not('categories', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        // Extract unique categories from posts
+        const uniqueCategories = data
+          .map(post => post.categories)
+          .filter((category, index, self) => 
+            category && 
+            index === self.findIndex(c => c?.id === category?.id)
+          );
+        setCategories(uniqueCategories);
+      }
     };
 
     fetchCategories();
