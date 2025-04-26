@@ -22,6 +22,7 @@ import Blog from "./pages/Blog";
 import SecurityScores from "./pages/SecurityScores";
 import PricingPlans from "./pages/PricingPlans";
 import ServiceSignup from "./pages/ServiceSignup";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/security-scores" element={<SecurityScores />} />
           <Route path="/pricing" element={<PricingPlans />} />
           <Route path="/service-signup/:plan" element={<ServiceSignup />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

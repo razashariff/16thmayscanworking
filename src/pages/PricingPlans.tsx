@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -74,7 +73,7 @@ const PricingPlans = () => {
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative glass-panel p-8 rounded-xl border ${
+              className={`relative glass-panel p-8 rounded-xl border flex flex-col ${
                 plan.highlighted
                   ? "border-cyber-neon animate-pulse-glow"
                   : "border-cyber-neon/20"
@@ -89,17 +88,17 @@ const PricingPlans = () => {
                 <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
                 <div className="mb-4">
                   <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-cyber-muted">{plan.period}</span>
+                  <span className="text-cyber-muted ml-2">{plan.period}</span>
                 </div>
                 {plan.duration && <p className="text-sm text-cyber-muted">{plan.duration}</p>}
                 {plan.isEnterprise && (
-                  <p className="text-sm text-cyber-muted mt-2">
+                  <p className="text-sm text-cyber-muted mt-4">
                     If you are a large corporate or enterprise with significant AI or SaaS products then reach out to us to discuss a custom security review and support offering.
                   </p>
                 )}
               </div>
 
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-4 mb-8 flex-grow">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center gap-2">
                     <Check className="text-cyber-neon h-5 w-5 flex-shrink-0" />
@@ -108,7 +107,7 @@ const PricingPlans = () => {
                 ))}
               </ul>
 
-              <div className="mt-auto pt-4">
+              <div className="mt-auto">
                 <Button
                   asChild
                   className={`w-full ${
@@ -119,10 +118,7 @@ const PricingPlans = () => {
                       : "bg-cyber-blue"
                   } hover:opacity-90 transition-opacity`}
                 >
-                  <Link to={plan.path} className="flex items-center justify-center gap-2">
-                    {plan.isEnterprise && <Phone size={18} />}
-                    {plan.buttonText}
-                  </Link>
+                  <Link to={plan.path}>{plan.buttonText}</Link>
                 </Button>
               </div>
             </Card>
