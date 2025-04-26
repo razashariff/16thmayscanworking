@@ -94,8 +94,8 @@ serve(async (req) => {
       subscription_data: {
         metadata: {
           plan: plan,
-        },
-        trial_period_days: null,
+        }
+        // Removed the trial_period_days parameter completely
       },
       metadata: {
         plan: plan,
