@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -131,13 +132,12 @@ const SecurityScores = () => {
   const getRatingColor = (rating: string) => {
     switch (rating) {
       case 'A':
-        return 'text-green-900 font-bold'; // Dark green text for A ratings
+        return 'text-green-900 font-bold'; // Dark green for A ratings
       case 'B':
-        return 'text-amber-900 font-bold'; // Dark amber text for B ratings
+        return 'text-orange-900 font-bold'; // Dark orange for B ratings
       case 'C':
-        return 'text-red-900 font-bold'; // Dark red text for C ratings
       case 'D':
-        return 'text-red-900 font-bold'; // Dark red text for D ratings
+        return 'text-red-900 font-bold'; // Dark red for C and D ratings
       default:
         return 'text-gray-900';
     }
