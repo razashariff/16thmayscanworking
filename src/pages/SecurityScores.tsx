@@ -1,8 +1,10 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Star, StarOff } from 'lucide-react';
 
 const products = [
@@ -163,14 +165,34 @@ const SecurityScores = () => {
     <div className="min-h-screen bg-cyber-dark text-cyber-text">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-12">
-        <h1 className="text-4xl font-bold mb-8 gradient-text">AI Tools Security Scores</h1>
-        <div className="max-w-4xl mb-12">
-          <p className="text-lg text-cyber-muted">
-            Comprehensive security analysis and detailed reviews of leading AI tools.
-            Our expert assessments help you make informed decisions about the security
-            features of various AI platforms.
-          </p>
+        <div className="flex justify-between items-start mb-12">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl font-bold mb-8 gradient-text">AI Tools Security Scores</h1>
+            <p className="text-lg text-cyber-muted">
+              Comprehensive security analysis and detailed reviews of leading AI tools.
+              Our expert assessments help you make informed decisions about the security
+              features of various AI platforms.
+            </p>
+          </div>
+          
+          {/* New Animated Sign-up Box */}
+          <div className="w-96 animate-fade-in">
+            <div className="glass-panel p-6 rounded-xl hover:scale-105 transition-all duration-300 border border-cyber-neon/20 hover:border-cyber-neon animate-pulse-glow">
+              <h3 className="text-xl font-bold mb-4 gradient-text">Get your AI product reviewed</h3>
+              <p className="text-cyber-muted mb-6">
+                We review AI tools and new AI SaaS Services created by you. Give your customers 
+                confidence on Security best practice and let your business scale securely.
+              </p>
+              <Button 
+                asChild
+                className="w-full bg-gradient-to-r from-cyber-blue to-cyber-neon hover:opacity-90 transition-opacity"
+              >
+                <Link to="/auth">Sign Up</Link>
+              </Button>
+            </div>
+          </div>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {products.map((product, index) => {
             const ratingColors = getRatingColor(product.rating);
