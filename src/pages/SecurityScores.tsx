@@ -11,7 +11,7 @@ const products = [
     subtitle: "AI-Built Software",
     description: "Full-Stack No Code Tool with Human Help. Your hunt for a CTO ends here.",
     action: "Security Scores",
-    color: "from-emerald-400 to-teal-500",
+    color: "bg-green-500",
     rating: "A"
   },
   {
@@ -19,7 +19,7 @@ const products = [
     subtitle: "Clone Any Project",
     description: "Turn designs into code instantly! Create powerful prompts for AI coding tools.",
     action: "Security Scores",
-    color: "from-indigo-400 to-purple-500",
+    color: "bg-orange-500",
     rating: "B"
   },
   {
@@ -27,7 +27,7 @@ const products = [
     subtitle: "Automate Everything",
     description: "No-code AI automation! Build AI-powered workflows effortlessly.",
     action: "Security Scores",
-    color: "from-fuchsia-400 to-pink-500",
+    color: "bg-green-500",
     rating: "A"
   },
   {
@@ -35,7 +35,7 @@ const products = [
     subtitle: "Smart App Builder",
     description: "Build sophisticated AI applications with minimal coding expertise required.",
     action: "Security Scores",
-    color: "from-blue-400 to-cyan-500",
+    color: "bg-orange-500",
     rating: "B"
   },
   {
@@ -43,7 +43,7 @@ const products = [
     subtitle: "AI Development Platform",
     description: "Complete AI development environment with built-in security features.",
     action: "Security Scores",
-    color: "from-violet-400 to-purple-500",
+    color: "bg-red-500",
     rating: "C"
   },
   {
@@ -51,7 +51,7 @@ const products = [
     subtitle: "AI Model Training",
     description: "Train and deploy custom AI models with enterprise-grade security.",
     action: "Security Scores",
-    color: "from-rose-400 to-pink-500",
+    color: "bg-green-500",
     rating: "A"
   },
   {
@@ -59,7 +59,7 @@ const products = [
     subtitle: "Workflow Automation",
     description: "Intelligent workflow automation with advanced AI capabilities.",
     action: "Security Scores",
-    color: "from-amber-400 to-orange-500",
+    color: "bg-red-500",
     rating: "D"
   },
   {
@@ -67,7 +67,7 @@ const products = [
     subtitle: "AI Code Generation",
     description: "Generate production-ready code with AI-powered suggestions.",
     action: "Security Scores",
-    color: "from-emerald-400 to-green-500",
+    color: "bg-orange-500",
     rating: "B"
   },
   {
@@ -75,7 +75,7 @@ const products = [
     subtitle: "AI Data Processing",
     description: "Process and analyze data with intelligent AI algorithms.",
     action: "Security Scores",
-    color: "from-sky-400 to-blue-500",
+    color: "bg-red-500",
     rating: "C"
   },
   {
@@ -83,7 +83,7 @@ const products = [
     subtitle: "AI Consulting Platform",
     description: "Comprehensive AI strategy and implementation services for enterprises.",
     action: "Security Scores",
-    color: "from-green-200 to-green-400",
+    color: "bg-green-500",
     rating: "A"
   },
   {
@@ -91,7 +91,7 @@ const products = [
     subtitle: "Advanced Code Generation",
     description: "AI-powered code generation with enterprise-level security protocols.",
     action: "Security Scores",
-    color: "from-amber-200 to-amber-400",
+    color: "bg-orange-500",
     rating: "B"
   },
   {
@@ -99,7 +99,7 @@ const products = [
     subtitle: "Security Risk Assessment",
     description: "Automated AI security risk analysis and mitigation strategies.",
     action: "Security Scores",
-    color: "from-red-200 to-red-400",
+    color: "bg-red-500",
     rating: "C"
   },
   {
@@ -107,7 +107,7 @@ const products = [
     subtitle: "Compliance Automation",
     description: "AI-driven security compliance tracking and reporting.",
     action: "Security Scores",
-    color: "from-red-300 to-red-500",
+    color: "bg-red-500",
     rating: "D"
   },
   {
@@ -115,7 +115,7 @@ const products = [
     subtitle: "Threat Detection AI",
     description: "Real-time AI-powered cybersecurity threat detection system.",
     action: "Security Scores",
-    color: "from-green-300 to-green-500",
+    color: "bg-green-500",
     rating: "A"
   },
   {
@@ -123,7 +123,7 @@ const products = [
     subtitle: "Security Code Review",
     description: "Automated AI-driven security code review and vulnerability detection.",
     action: "Security Scores",
-    color: "from-amber-300 to-amber-500",
+    color: "bg-orange-500",
     rating: "B"
   }
 ];
@@ -177,7 +177,7 @@ const SecurityScores = () => {
             return (
               <Card 
                 key={index} 
-                className={`glass-panel p-6 rounded-xl bg-gradient-to-br ${product.color} hover:scale-105 transition-transform duration-300`}
+                className={`glass-panel p-6 rounded-xl ${product.color} hover:scale-105 transition-transform duration-300`}
               >
                 <h3 className="text-xl font-semibold text-white mb-2">{product.title}</h3>
                 <p className="text-white/80 text-sm mb-2">{product.subtitle}</p>
