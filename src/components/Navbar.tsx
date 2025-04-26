@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Calendar, Menu, X } from "lucide-react";
+import { Calendar, Menu, X, LogIn } from "lucide-react";
 import BookingModal from './BookingModal';
 
 const Navbar = () => {
@@ -68,13 +67,21 @@ const Navbar = () => {
               Contact
             </Link>
           </div>
-          <Button 
-            onClick={openModal}
-            className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue text-white border border-transparent hover:border-cyber-neon transition-all duration-300 shadow-lg hover:shadow-cyber-neon/30"
-          >
-            <Calendar className="mr-2 h-4 w-4" />
-            Book a Call
-          </Button>
+          <div className="flex items-center gap-4">
+            <Link to="/auth">
+              <Button variant="ghost" className="text-cyber-text hover:text-cyber-neon flex items-center gap-2">
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
+            </Link>
+            <Button 
+              onClick={openModal}
+              className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue text-white border border-transparent hover:border-cyber-neon transition-all duration-300 shadow-lg hover:shadow-cyber-neon/30"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Book a Call
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Menu Button */}
@@ -141,12 +148,24 @@ const Navbar = () => {
             >
               Contact
             </Link>
+            <Link 
+              to="/auth" 
+              onClick={() => {
+                handleNavigation('/auth');
+                toggleMenu();
+              }}
+            >
+              <Button variant="ghost" className="w-full text-cyber-text hover:text-cyber-neon flex items-center gap-2 justify-center">
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
+            </Link>
             <Button 
               onClick={() => {
                 openModal();
                 toggleMenu();
               }}
-              className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue text-white"
+              className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue text-white w-full"
             >
               <Calendar className="mr-2 h-4 w-4" />
               Book a Call
