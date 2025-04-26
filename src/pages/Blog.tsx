@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,16 @@ const Blog = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      navigate('/');
+      
+      toast({
+        title: "Success",
+        description: "Successfully logged out",
+      });
+      
+      // Delay navigation to show the toast
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
     } catch (error: any) {
       toast({
         title: "Error",
