@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -92,111 +94,123 @@ const Auth = () => {
   // Registration success screen
   if (registrationSuccess) {
     return (
-      <div className="min-h-screen bg-cyber-dark flex items-center justify-center p-4">
-        <Card className="w-full max-w-md glass-panel">
-          <CardHeader>
-            <div className="flex flex-col items-center text-center">
-              <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
-              <h2 className="text-2xl font-bold gradient-text">
-                Thanks for registering!
-              </h2>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center mb-6">
-              Please check your email to verify your account. Once verified, you can log in and access all features.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              onClick={navigateToHome}
-              className="w-full bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon"
-            >
-              Return to Blog
-            </Button>
-          </CardFooter>
-        </Card>
+      <div className="min-h-screen flex flex-col bg-cyber-dark">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center p-4 pt-24 pb-12">
+          <Card className="w-full max-w-md glass-panel border border-cyber-blue/20">
+            <CardHeader>
+              <div className="flex flex-col items-center text-center">
+                <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+                <h2 className="text-2xl font-bold gradient-text">
+                  Thanks for registering!
+                </h2>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center mb-6 text-cyber-text">
+                Please check your email to verify your account. Once verified, you can log in and access all features.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={navigateToHome}
+                className="w-full bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon hover:from-cyber-purple hover:to-cyber-blue"
+              >
+                Return to Blog
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cyber-dark flex items-center justify-center p-4">
-      <Card className="w-full max-w-md glass-panel">
-        <CardHeader>
-          <h2 className="text-2xl font-bold text-center gradient-text">
-            {isSignUp ? "Create an Account" : "Welcome Back"}
-          </h2>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
+    <div className="min-h-screen flex flex-col bg-cyber-dark">
+      <Navbar />
+      <div className="flex-grow flex items-center justify-center p-4 pt-24 pb-12">
+        <Card className="w-full max-w-md glass-panel border border-cyber-blue/20">
+          <CardHeader>
+            <h2 className="text-2xl font-bold text-center gradient-text">
+              {isSignUp ? "Create an Account" : "Welcome Back"}
+            </h2>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-cyber-text">Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={isSignUp}
+                    className="bg-cyber-dark/50 border-cyber-blue/30 text-cyber-text"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="email" className="text-cyber-text">Email</Label>
                 <Input
-                  id="name"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={isSignUp}
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-cyber-dark/50 border-cyber-blue/30 text-cyber-text"
                 />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button
-            onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon"
-            disabled={isLoading}
-          >
-            {isLoading
-              ? "Processing..."
-              : isSignUp
-              ? "Create Account"
-              : "Sign In"}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => setIsSignUp(!isSignUp)}
-          >
-            {isSignUp
-              ? "Already have an account? Sign In"
-              : "Need an account? Sign Up"}
-          </Button>
-        </CardFooter>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-cyber-text">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="bg-cyber-dark/50 border-cyber-blue/30 text-cyber-text"
+                />
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <Button
+              onClick={handleSubmit}
+              className="w-full bg-gradient-to-r from-cyber-blue via-cyber-purple to-cyber-neon hover:from-cyber-purple hover:to-cyber-blue"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? "Processing..."
+                : isSignUp
+                ? "Create Account"
+                : "Sign In"}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-cyber-text hover:text-cyber-neon"
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp
+                ? "Already have an account? Sign In"
+                : "Need an account? Sign Up"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      <Footer />
     </div>
   );
 };
 
 export default Auth;
+
