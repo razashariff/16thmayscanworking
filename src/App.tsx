@@ -20,6 +20,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import Auth from "./pages/Auth";
 import Blog from "./pages/Blog";
 import SecurityScores from "./pages/SecurityScores";
+import PricingPlans from "./pages/PricingPlans";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/security-scores" element={<SecurityScores />} />
+          <Route path="/pricing" element={<PricingPlans />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

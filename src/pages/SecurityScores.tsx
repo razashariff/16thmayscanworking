@@ -175,7 +175,7 @@ const SecurityScores = () => {
             </p>
           </div>
           
-          {/* New Animated Sign-up Box */}
+          {/* Animated Sign-up Box */}
           <div className="w-96 animate-fade-in">
             <div className="glass-panel p-6 rounded-xl hover:scale-105 transition-all duration-300 border border-cyber-neon/20 hover:border-cyber-neon animate-pulse-glow">
               <h3 className="text-xl font-bold mb-4 gradient-text">Get your AI product reviewed</h3>
@@ -187,7 +187,7 @@ const SecurityScores = () => {
                 asChild
                 className="w-full bg-gradient-to-r from-cyber-blue to-cyber-neon hover:opacity-90 transition-opacity"
               >
-                <Link to="/auth">Sign Up</Link>
+                <Link to="/pricing">Sign Up</Link>
               </Button>
             </div>
           </div>
