@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import { Check, Phone } from 'lucide-react';
 
 const PricingPlans = () => {
   const plans = [
@@ -40,6 +40,23 @@ const PricingPlans = () => {
       highlighted: true,
       path: "/service-signup/premium"
     },
+    {
+      name: "Agency or Enterprise",
+      price: "Custom",
+      period: "pricing",
+      features: [
+        "Tailored security review for large organizations",
+        "Dedicated security team support",
+        "Custom implementation assistance",
+        "Priority incident response",
+        "Quarterly security assessments",
+        "Executive security briefings",
+      ],
+      buttonText: "Contact Us",
+      duration: "",
+      path: "/contact",
+      isEnterprise: true
+    },
   ];
 
   return (
@@ -53,7 +70,7 @@ const PricingPlans = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
             <Card
               key={index}
@@ -74,7 +91,12 @@ const PricingPlans = () => {
                   <span className="text-4xl font-bold">{plan.price}</span>
                   <span className="text-cyber-muted">{plan.period}</span>
                 </div>
-                <p className="text-sm text-cyber-muted">{plan.duration}</p>
+                {plan.duration && <p className="text-sm text-cyber-muted">{plan.duration}</p>}
+                {plan.isEnterprise && (
+                  <p className="text-sm text-cyber-muted mt-2">
+                    If you are a large corporate or enterprise with significant AI or SaaS products then reach out to us to discuss a custom security review and support offering.
+                  </p>
+                )}
               </div>
 
               <ul className="space-y-4 mb-8">
@@ -92,10 +114,15 @@ const PricingPlans = () => {
                   className={`w-full ${
                     plan.highlighted
                       ? "bg-gradient-to-r from-cyber-blue to-cyber-neon"
+                      : plan.isEnterprise
+                      ? "bg-cyber-purple"
                       : "bg-cyber-blue"
                   } hover:opacity-90 transition-opacity`}
                 >
-                  <Link to={plan.path}>{plan.buttonText}</Link>
+                  <Link to={plan.path} className="flex items-center justify-center gap-2">
+                    {plan.isEnterprise && <Phone size={18} />}
+                    {plan.buttonText}
+                  </Link>
                 </Button>
               </div>
             </Card>

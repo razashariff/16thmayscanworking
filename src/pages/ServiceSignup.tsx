@@ -70,13 +70,15 @@ const ServiceSignup = () => {
 
       // Create Stripe checkout session
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: { plan }
+        body: { plan, email } // Pass email here to handle unauthenticated state
       });
 
       if (checkoutError) throw checkoutError;
 
       if (checkoutData?.url) {
         window.location.href = checkoutData.url;
+      } else {
+        throw new Error("No checkout URL returned");
       }
     } catch (error) {
       console.error('Error:', error);

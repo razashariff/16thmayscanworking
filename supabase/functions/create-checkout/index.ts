@@ -14,34 +14,48 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    const { plan } = await req.json();
+    const { plan, email } = await req.json();
     if (!plan) throw new Error("Plan is required");
-
-    // Get the user from the auth header
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-    if (!user?.email) throw new Error("User not authenticated");
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
+    // Get user email either from request body or from auth header
+    let userEmail = email;
+    
+    if (!userEmail) {
+      // Try to get from auth header if available
+      try {
+        // Create Supabase client
+        const supabaseClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+        );
+
+        const authHeader = req.headers.get("Authorization")!;
+        const token = authHeader.replace("Bearer ", "");
+        const { data: { user } } = await supabaseClient.auth.getUser(token);
+        if (user?.email) {
+          userEmail = user.email;
+        }
+      } catch (authError) {
+        console.error("Authentication error:", authError);
+        // Continue with email from request body if auth fails
+      }
+    }
+
+    if (!userEmail) throw new Error("User email is required");
+
     // Check if customer exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     } else {
       // Create a new customer
-      const customer = await stripe.customers.create({ email: user.email });
+      const customer = await stripe.customers.create({ email: userEmail });
       customerId = customer.id;
     }
 
@@ -57,7 +71,7 @@ serve(async (req) => {
           description: "Basic security review of your product/service with 3 months rating listing"
         }
       };
-    } else {
+    } else if (plan === "premium") {
       priceData = {
         currency: "gbp",
         unit_amount: 3000, // £30.00
@@ -67,6 +81,8 @@ serve(async (req) => {
           description: "Full detailed security review with everything in Basic plan"
         }
       };
+    } else {
+      throw new Error("Invalid plan selected");
     }
 
     const price = await stripe.prices.create(priceData);
