@@ -67,6 +67,7 @@ const ServiceSignup = () => {
 
       // Redirect to the Stripe checkout page
       if (data?.url) {
+        console.log("Redirecting to Stripe checkout URL:", data.url);
         window.location.href = data.url;
       } else {
         throw new Error('No checkout URL was returned');
