@@ -1,224 +1,59 @@
-import { ShieldCheck, Search, Code, Database, Zap, UserCheck } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
-const services = [
-  {
-    icon: <ShieldCheck className="h-12 w-12 text-cyber-neon" />,
-    title: "Security Audits",
-    description: "Comprehensive assessment of your startup's security posture with actionable recommendations.",
-    link: "/security-audits",
-    hoverContent: {
-      subtitle: "Audit smarter, not harder.",
-      details: "Our security audits are custom-built for startups — not bloated enterprises.",
-      features: [
-        "Source code & GitOps pipelines",
-        "Cloud configs (AWS/GCP/Azure)",
-        "SaaS & microservice architectures",
-        "AI & ML models (and how they're called/used)",
-        "Secrets management & key rotation"
-      ],
-      benefits: [
-        "What's vulnerable",
-        "Why it matters",
-        "How to fix it (in plain English, with code examples)"
-      ]
-    }
-  },
-  {
-    icon: <Code className="h-12 w-12 text-cyber-purple" />,
-    title: "Vibe Coding Security",
-    description: "Specialized security practices for modern development methodologies and frameworks.",
-    link: "/vibe-coding-security",
-    hoverContent: {
-      subtitle: "Security that flows with your code, not against it.",
-      details: "Our signature approach to secure modern dev that speaks your language.",
-      technologies: [
-        "React, Next.js, Node, Python, Go",
-        "Vector databases & embeddings",
-        "Open-source LLM APIs",
-        "Cloud-native CI/CD pipelines"
-      ],
-      features: [
-        "Secure code review using both human and AI-assisted static analysis",
-        "Secure SDK guidance for LLM use",
-        "Real-time dev feedback loops"
-      ]
-    }
-  },
-  {
-    icon: <Search className="h-12 w-12 text-cyber-blue" />,
-    title: "Threat Detection",
-    description: "Proactive monitoring and identification of potential security threats before they become breaches.",
-    link: "/threat-detection",
-    hoverContent: {
-      subtitle: "You don't need to be a SOC — you need visibility.",
-      details: "We provide startup-grade threat detection that's smart, fast, and scalable.",
-      features: [
-        "24/7 monitoring of authentication flows, API endpoints, and storage buckets",
-        "Anomaly detection across users, services, and AI inputs",
-        "Suspicious prompt activity detection",
-        "Detection of insider threats and credential stuffing"
-      ]
-    }
-  },
-  {
-    icon: <Database className="h-12 w-12 text-cyber-accent" />,
-    title: "Data Protection",
-    description: "Implementation of robust data security measures to safeguard your valuable information.",
-    link: "/data-protection",
-    hoverContent: {
-      subtitle: "Data is your product. We protect it like gold.",
-      details: "Whether you're handling PII, PHI, behavioral analytics, or model training data — data protection is mission-critical.",
-      features: [
-        "End-to-end encryption (at rest and in transit)",
-        "Least privilege IAM models",
-        "Tokenization and pseudonymization of user data",
-        "Geo-aware data compliance",
-        "Secure key management"
-      ]
-    }
-  },
-  {
-    icon: <UserCheck className="h-12 w-12 text-cyber-neon" />,
-    title: "Security Training",
-    description: "Custom security awareness training for your team to build a security-first culture.",
-    link: "/security-training",
-    hoverContent: {
-      subtitle: "Security is a team sport. Train like it.",
-      details: "Your tech is only as strong as your people.",
-      features: [
-        "How to think like a hacker (and stop them)",
-        "The OWASP Top 10 for modern web frameworks",
-        "Secure AI & LLM usage in production",
-        "Breach simulation workshops",
-        "Security 101 for new hires"
-      ]
-    }
-  },
-  {
-    icon: <Zap className="h-12 w-12 text-cyber-purple" />,
-    title: "Incident Response",
-    description: "Rapid and effective response strategies for security incidents to minimize impact.",
-    link: "/incident-response",
-    hoverContent: {
-      subtitle: "When it hits the fan, we don't freeze — we respond.",
-      details: "From credential leaks to AWS exploits, we help you contain, investigate, and recover fast.",
-      features: [
-        "Real-time breach triage and decision-making",
-        "Secure comms & legal coordination",
-        "Forensic analysis & root cause isolation",
-        "Containment and rollback plans",
-        "Public response support"
-      ]
-    }
-  }
-];
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Shield, FileSearch, ShieldCheck, ShieldAlert } from 'lucide-react';
 
 const Services = () => {
-  const triggerCalendly = () => {
-    window.open('https://calendly.com/breach2020', '_blank');
-  };
+  const services = [
+    {
+      icon: <Shield className="h-10 w-10 text-cyber-neon" />,
+      title: "Security Audits",
+      description: "Comprehensive review of your application security including penetration testing and code review.",
+      link: "/security-audits"
+    },
+    {
+      icon: <ShieldCheck className="h-10 w-10 text-cyber-neon" />,
+      title: "Security Training",
+      description: "Educational programs to help your team understand security best practices.",
+      link: "/security-training"
+    },
+    {
+      icon: <FileSearch className="h-10 w-10 text-cyber-neon" />,
+      title: "Vulnerability Scanner",
+      description: "Automated security testing to identify vulnerabilities in your websites and applications.",
+      link: "/vulnerability-scanner",
+      highlighted: true
+    },
+    {
+      icon: <ShieldAlert className="h-10 w-10 text-cyber-neon" />,
+      title: "Incident Response",
+      description: "Fast professional response when security incidents occur.",
+      link: "/incident-response"
+    },
+  ];
 
   return (
-    <section id="services" className="py-20 relative overflow-hidden bg-cyber-dark">
-      <div className="absolute inset-0 bg-cyber-grid opacity-10"></div>
-      
-      <div className="container mx-auto px-4 relative z-10">
+    <section id="services" className="py-24 bg-cyber-dark">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Our Security Services</h2>
-          <p className="text-lg text-cyber-muted max-w-2xl mx-auto">
-            Specialized cyber security solutions designed for new founders and startups, with focus on modern development practices.
+          <h2 className="text-4xl font-bold mb-6 gradient-text">Our Services</h2>
+          <p className="max-w-2xl mx-auto text-cyber-muted">
+            Comprehensive security solutions to protect your digital assets and ensure your business stays ahead of cyber threats.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {services.map((service, index) => (
-            <HoverCard key={index}>
-              <HoverCardTrigger asChild>
-                <div className="block transition-transform hover:scale-105">
-                  <Card className="bg-cyber-dark border border-cyber-blue/20 hover:border-cyber-neon/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyber-neon/10 h-full">
-                    <CardHeader>
-                      <div className="mb-4 p-3 inline-block rounded-lg bg-cyber-purple/10">
-                        {service.icon}
-                      </div>
-                      <CardTitle className="text-xl font-bold text-cyber-text">{service.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-cyber-muted text-base">
-                        {service.description}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
+            <Link to={service.link} key={index}>
+              <div className={`h-full glass-panel p-6 rounded-xl border border-cyber-neon/20 transition-all duration-300 hover:border-cyber-neon/50 hover:scale-[1.03] hover:shadow-glow ${service.highlighted ? 'border-cyber-purple/40 hover:border-cyber-purple/70' : ''}`}>
+                <div className="mb-6">
+                  {service.icon}
                 </div>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-96 bg-cyber-dark/95 border border-cyber-neon/30 backdrop-blur-md text-cyber-text">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-bold text-cyber-neon">{service.hoverContent.subtitle}</h3>
-                  <p className="text-sm text-cyber-muted">{service.hoverContent.details}</p>
-                  
-                  {service.hoverContent.technologies && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-cyber-purple">Technologies:</h4>
-                      <ul className="text-sm text-cyber-muted space-y-1">
-                        {service.hoverContent.technologies.map((tech, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <span className="text-cyber-neon">→</span> {tech}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold text-cyber-purple">Features:</h4>
-                    <ul className="text-sm text-cyber-muted space-y-1">
-                      {service.hoverContent.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <span className="text-cyber-neon">→</span> {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  {service.hoverContent.benefits && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-cyber-purple">Benefits:</h4>
-                      <ul className="text-sm text-cyber-muted space-y-1">
-                        {service.hoverContent.benefits.map((benefit, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <span className="text-cyber-neon">→</span> {benefit}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </HoverCardContent>
-            </HoverCard>
+                <h3 className="text-xl font-bold mb-4">{service.title}</h3>
+                <p className="text-cyber-muted">{service.description}</p>
+              </div>
+            </Link>
           ))}
-        </div>
-        
-        <div className="mt-16 p-8 rounded-2xl bg-gradient-to-r from-cyber-blue/20 to-cyber-purple/20 border border-cyber-neon/20">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold text-cyber-text mb-4">
-                Not sure which service you need?
-              </h3>
-              <p className="text-cyber-muted mb-6">
-                We offer new founders and Vibe Coders a free 15 minute slot to discuss specific security challenges and support. Reach out to discuss your requirements and we welcome collaboration, partners and sponsors to work with us too.
-              </p>
-            </div>
-            <div className="flex justify-center md:justify-end">
-              <Button 
-                onClick={triggerCalendly}
-                className="px-6 py-3 bg-cyber-neon text-cyber-dark font-medium rounded-lg hover:bg-opacity-90 transition-all shadow-lg shadow-cyber-neon/20"
-              >
-                Book Your Free Consultation
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     </section>

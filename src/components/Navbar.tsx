@@ -1,163 +1,188 @@
-import { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Calendar, Menu, X, LogIn } from "lucide-react";
-import BookingModal from './BookingModal';
+import { Button } from '@/components/ui/button';
+import { useMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const isMobile = useMobile();
   const location = useLocation();
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-  
-  const isActive = (path: string) => location.pathname === path;
-  
-  const handleNavigation = (path: string) => {
-    console.log("Navigating to:", path);
-    console.log("Current location:", location.pathname);
-    // This function is only for logging purposes
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user || null);
+    };
+
+    getUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Close mobile menu when route changes
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success('Logged out successfully');
   };
 
-  return (
-    <nav className="fixed w-full top-0 z-50 bg-cyber-dark/80 backdrop-blur-lg border-b border-cyber-blue/20">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="flex items-center" onClick={() => handleNavigation('/')}>
-          <span className="text-2xl font-bold gradient-text">CyberSecAI</span>
-        </Link>
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          <div className="flex items-center space-x-6">
-            <Link 
-              to="/" 
-              className={`transition-colors ${isActive('/') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}
-              onClick={() => handleNavigation('/')}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/services" 
-              className={`transition-colors ${isActive('/services') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}
-              onClick={() => handleNavigation('/services')}
-            >
-              Services
-            </Link>
-            <Link 
-              to="/about" 
-              className={`transition-colors ${isActive('/about') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}
-              onClick={() => handleNavigation('/about')}
-            >
-              About
-            </Link>
-            <Link 
-              to="/contact" 
-              className={`transition-colors ${isActive('/contact') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`}
-              onClick={() => handleNavigation('/contact')}
-            >
-              Contact
-            </Link>
+  const links = [
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+    { name: 'Pricing', path: '/pricing' },
+    { name: 'Vulnerability Scanner', path: '/vulnerability-scanner', protected: true },
+    { name: 'Blog', path: '/blog' },
+    { name: 'Contact', path: '/contact' },
+  ];
+
+  const navbarClasses = `fixed w-full z-50 transition-all duration-300 ${
+    isScrolled ? 'bg-cyber-dark/90 backdrop-blur-md shadow-glow-sm' : 'bg-transparent'
+  }`;
+
+  return (
+    <nav className={navbarClasses}>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex-shrink-0 flex items-center">
+            <span className="text-xl font-bold gradient-text">VIBE::SECURITY</span>
+          </Link>
+          
+          <div className="hidden md:block">
+            <div className="ml-4 flex items-center space-x-4">
+              {links.filter(link => !link.protected || user).map((link, index) => (
+                <Link 
+                  key={index} 
+                  to={link.path}
+                  className={`px-3 py-2 text-sm font-medium hover:text-cyber-neon transition-colors ${
+                    location.pathname === link.path ? 'text-cyber-neon' : 'text-cyber-text'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              
+              {user ? (
+                <Button 
+                  variant="outline"
+                  className="border-cyber-neon/30 hover:bg-cyber-neon/10"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Link to="/auth">
+                  <Button className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue">
+                    Login / Sign Up
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/auth">
-              <Button variant="ghost" className="text-cyber-text hover:text-cyber-neon flex items-center gap-2">
-                <LogIn className="h-4 w-4" />
-                Login
-              </Button>
-            </Link>
-            <Button 
-              onClick={openModal}
-              className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue text-white border border-transparent hover:border-cyber-neon transition-all duration-300 shadow-lg hover:shadow-cyber-neon/30"
+          
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-cyber-muted hover:text-white hover:bg-cyber-dark/50 focus:outline-none"
+              aria-expanded="false"
             >
-              <Calendar className="mr-2 h-4 w-4" />
-              Book a Call
-            </Button>
+              <span className="sr-only">Open main menu</span>
+              <svg
+                className={`${isOpen ? 'hidden' : 'block'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              <svg
+                className={`${isOpen ? 'block' : 'hidden'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
         </div>
-
-        {/* Mobile Menu Button */}
-        <button className="md:hidden text-cyber-text" onClick={toggleMenu}>
-          {isMenuOpen ? (
-            <X size={24} className="text-cyber-neon" />
-          ) : (
-            <Menu size={24} />
-          )}
-        </button>
       </div>
 
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-cyber-dark border-t border-cyber-blue/20 py-4 animate-fade-in">
-          <div className="container mx-auto px-4 flex flex-col space-y-4">
-            <Link 
-              to="/" 
-              className={`px-2 py-2 rounded-md ${isActive('/') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} 
-              onClick={() => {
-                handleNavigation('/');
-                toggleMenu();
-              }}
+      <div className={`${isOpen ? 'block' : 'hidden'} md:hidden bg-cyber-dark/95 backdrop-blur-lg shadow-glow-sm`}>
+        <div className="px-2 pt-2 pb-3 space-y-1">
+          {links.filter(link => !link.protected || user).map((link, index) => (
+            <Link
+              key={index}
+              to={link.path}
+              className={`block px-3 py-2 text-base font-medium ${
+                location.pathname === link.path ? 'text-cyber-neon' : 'text-cyber-text'
+              } hover:text-cyber-neon transition-colors`}
             >
-              Home
+              {link.name}
             </Link>
-            <Link 
-              to="/services" 
-              className={`px-2 py-2 rounded-md ${isActive('/services') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} 
-              onClick={() => {
-                handleNavigation('/services');
-                toggleMenu();
-              }}
+          ))}
+          
+          {user ? (
+            <button 
+              className="w-full text-left block px-3 py-2 text-base font-medium text-cyber-text hover:text-cyber-neon transition-colors"
+              onClick={handleLogout}
             >
-              Services
-            </Link>
-            <Link 
-              to="/about" 
-              className={`px-2 py-2 rounded-md ${isActive('/about') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} 
-              onClick={() => {
-                handleNavigation('/about');
-                toggleMenu();
-              }}
-            >
-              About
-            </Link>
-            <Link 
-              to="/contact" 
-              className={`px-2 py-2 rounded-md ${isActive('/contact') ? 'text-cyber-neon' : 'text-cyber-text hover:text-cyber-neon'}`} 
-              onClick={() => {
-                handleNavigation('/contact');
-                toggleMenu();
-              }}
-            >
-              Contact
-            </Link>
+              Logout
+            </button>
+          ) : (
             <Link 
               to="/auth" 
-              onClick={() => {
-                handleNavigation('/auth');
-                toggleMenu();
-              }}
+              className="block px-3 py-2 text-base font-medium text-cyber-neon"
             >
-              <Button variant="ghost" className="w-full text-cyber-text hover:text-cyber-neon flex items-center gap-2 justify-center">
-                <LogIn className="h-4 w-4" />
-                Login
-              </Button>
+              Login / Sign Up
             </Link>
-            <Button 
-              onClick={() => {
-                openModal();
-                toggleMenu();
-              }}
-              className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue text-white w-full"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Book a Call
-            </Button>
-          </div>
+          )}
         </div>
-      )}
-
-      <BookingModal isOpen={isModalOpen} onClose={closeModal} />
+      </div>
     </nav>
   );
 };

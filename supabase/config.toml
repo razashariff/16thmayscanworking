@@ -1,1 +1,5 @@
+
 project_id = "jjdzrxfriezvfxjacche"
+
+[functions.zap-scan]
+verify_jwt = true
