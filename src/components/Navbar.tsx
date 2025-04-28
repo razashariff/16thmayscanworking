@@ -55,14 +55,17 @@ const Navbar = () => {
     toast.success('Logged out successfully');
   };
 
+  const triggerCalendly = () => {
+    // Open directly to breach2020 Calendly
+    window.open('https://calendly.com/breach2020', '_blank');
+  };
+
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const links = [
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
-    { name: 'Pricing', path: '/pricing' },
-    { name: 'Vulnerability Scanner', path: '/vulnerability-scanner', protected: true },
-    { name: 'Blog', path: '/blog' },
+    { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -75,12 +78,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex-shrink-0 flex items-center">
-            <span className="text-xl font-bold gradient-text">VIBE::SECURITY</span>
+            <span className="text-xl font-bold text-cyber-neon">CyberSecAI</span>
           </Link>
           
           <div className="hidden md:block">
             <div className="ml-4 flex items-center space-x-4">
-              {links.filter(link => !link.protected || user).map((link, index) => (
+              {links.map((link, index) => (
                 <Link 
                   key={index} 
                   to={link.path}
@@ -101,12 +104,23 @@ const Navbar = () => {
                   Logout
                 </Button>
               ) : (
-                <Link to="/auth">
-                  <Button className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue">
-                    Login / Sign Up
+                <Link to="/auth" className="flex items-center">
+                  <Button variant="ghost" className="text-cyber-text hover:text-cyber-neon">
+                    <span className="flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14"></path>
+                      </svg>
+                      Login
+                    </span>
                   </Button>
                 </Link>
               )}
+              <Button 
+                onClick={triggerCalendly}
+                className="bg-cyber-purple hover:bg-cyber-blue text-white"
+              >
+                Book a Call
+              </Button>
             </div>
           </div>
           
@@ -154,7 +168,7 @@ const Navbar = () => {
 
       <div className={`${isOpen ? 'block' : 'hidden'} md:hidden bg-cyber-dark/95 backdrop-blur-lg shadow-glow-sm`}>
         <div className="px-2 pt-2 pb-3 space-y-1">
-          {links.filter(link => !link.protected || user).map((link, index) => (
+          {links.map((link, index) => (
             <Link
               key={index}
               to={link.path}
@@ -178,9 +192,15 @@ const Navbar = () => {
               to="/auth" 
               className="block px-3 py-2 text-base font-medium text-cyber-neon"
             >
-              Login / Sign Up
+              Login
             </Link>
           )}
+          <Button 
+            onClick={triggerCalendly}
+            className="w-full bg-cyber-purple hover:bg-cyber-blue text-white mt-2"
+          >
+            Book a Call
+          </Button>
         </div>
       </div>
     </nav>
