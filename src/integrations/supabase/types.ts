@@ -249,6 +249,45 @@ export type Database = {
           },
         ]
       }
+      vulnerability_scans: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          progress: number
+          report_path: string | null
+          site_url: string
+          status: string
+          summary: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          report_path?: string | null
+          site_url: string
+          status?: string
+          summary?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          report_path?: string | null
+          site_url?: string
+          status?: string
+          summary?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
