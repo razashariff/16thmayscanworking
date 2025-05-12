@@ -1,8 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { Shield, Code, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+
 const VibeSecurity = () => {
-  return <section className="relative min-h-screen pt-24 overflow-hidden">
+  return (
+    <section className="relative min-h-screen pt-24 overflow-hidden">
       <div className="hero-gradient absolute inset-0 z-0"></div>
       
       <div className="absolute inset-0 z-0 overflow-hidden">
@@ -49,7 +52,7 @@ const VibeSecurity = () => {
           {/* Right side content */}
           <div className="flex flex-col space-y-6">
             {/* Sign up box */}
-            <div className="<div class=\"glass-panel transform scale-50 p-8 rounded-xl hover:shadow-lg hover:shadow-cyber-neon/20\n            bg-gradient-to-br from-[#6C63FF] via-[#3E54D3] to-[#00F5FF] border border-white/20\">\n  \u2026\n</div>\n">
+            <div className="glass-panel transform p-8 rounded-xl hover:shadow-lg hover:shadow-cyber-neon/20 bg-gradient-to-br from-[#6C63FF] via-[#3E54D3] to-[#00F5FF] border border-white/20">
               <h3 className="text-2xl font-semibold mb-4 text-white">Sign-up to Cybersec AI Army</h3>
               <p className="text-white/90 mb-6">Let us know about your issue. This community is our place to ensure your AI Innovation is Security-centric and your brand is protected. Be a Secure Founder now and join us!</p>
               <Link to="/auth">
@@ -75,6 +78,8 @@ const VibeSecurity = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default VibeSecurity;

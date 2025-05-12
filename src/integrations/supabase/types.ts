@@ -249,6 +249,150 @@ export type Database = {
           },
         ]
       }
+      scan_results: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          id: string
+          report_url: string | null
+          status: string | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          id: string
+          report_url?: string | null
+          status?: string | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          id?: string
+          report_url?: string | null
+          status?: string | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      scans: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          error: string | null
+          results: Json | null
+          scan_id: string
+          status: string
+          url: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error?: string | null
+          results?: Json | null
+          scan_id?: string
+          status?: string
+          url: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error?: string | null
+          results?: Json | null
+          scan_id?: string
+          status?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          api_key: string | null
+          created_at: string | null
+          email: string
+          id: string
+          is_approved: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string | null
+          email: string
+          id: string
+          is_approved?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_approved?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          email_verified: boolean | null
+          id: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          email_verified?: boolean | null
+          id?: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          email_verified?: boolean | null
+          id?: string
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      vulnerabilities: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          scan_id: string | null
+          severity: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          scan_id?: string | null
+          severity: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          scan_id?: string | null
+          severity?: string
+        }
+        Relationships: []
+      }
       vulnerability_scans: {
         Row: {
           completed_at: string | null
@@ -256,9 +400,11 @@ export type Database = {
           id: string
           progress: number
           report_path: string | null
-          site_url: string
+          scan_type: string | null
+          started_at: string | null
           status: string
           summary: Json | null
+          target_url: string
           updated_at: string
           user_id: string
         }
@@ -268,9 +414,11 @@ export type Database = {
           id?: string
           progress?: number
           report_path?: string | null
-          site_url: string
+          scan_type?: string | null
+          started_at?: string | null
           status?: string
           summary?: Json | null
+          target_url: string
           updated_at?: string
           user_id: string
         }
@@ -280,9 +428,11 @@ export type Database = {
           id?: string
           progress?: number
           report_path?: string | null
-          site_url?: string
+          scan_type?: string | null
+          started_at?: string | null
           status?: string
           summary?: Json | null
+          target_url?: string
           updated_at?: string
           user_id?: string
         }
@@ -293,7 +443,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_scans_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
