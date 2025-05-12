@@ -28,6 +28,8 @@ const SecurityAssessmentQuestions = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [score, setScore] = useState(0);
+  const [grade, setGrade] = useState('C');
 
   useEffect(() => {
     const fetchAssessment = async () => {
@@ -56,14 +58,19 @@ const SecurityAssessmentQuestions = () => {
           .select(`
             *,
             category: category_id (*)
-          `)
-          .order('criticality', { ascending: false })
-          .order('weight', { ascending: false });
+          `);
 
         if (questionsError) throw questionsError;
         
-        // Cast to the correct type
-        setQuestions(questionsData as unknown as QuestionWithCategory[]);
+        // Cast to the correct type and sort by criticality
+        const typedQuestions = questionsData as unknown as QuestionWithCategory[];
+        const sortedQuestions = typedQuestions.sort((a, b) => {
+          const criticalityOrder = { "CRITICAL": 1, "MAJOR": 2, "MINOR": 3 };
+          return criticalityOrder[a.criticality as keyof typeof criticalityOrder] - 
+                 criticalityOrder[b.criticality as keyof typeof criticalityOrder];
+        });
+        
+        setQuestions(sortedQuestions);
 
         // Fetch existing responses
         const { data: responsesData, error: responsesError } = await supabase
@@ -86,6 +93,11 @@ const SecurityAssessmentQuestions = () => {
         const totalQuestions = questionsData.length;
         setProgress(totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0);
 
+        // Calculate score if we already have responses
+        if (responsesData.length > 0) {
+          calculateCurrentScore(responseMap, sortedQuestions);
+        }
+
       } catch (error) {
         console.error('Error fetching assessment data:', error);
         toast.error('Failed to load assessment data');
@@ -97,8 +109,40 @@ const SecurityAssessmentQuestions = () => {
     fetchAssessment();
   }, [assessmentId, navigate]);
 
+  const calculateCurrentScore = (currentResponses: Record<string, string>, questionsList: QuestionWithCategory[]) => {
+    let totalWeight = 0;
+    let weightedScore = 0;
+    
+    questionsList.forEach(question => {
+      const weight = question.weight || 1;
+      totalWeight += weight;
+      
+      const response = currentResponses[question.id];
+      if (response === 'IN_PLACE') {
+        weightedScore += weight;
+      } else if (response === 'IN_PROGRESS') {
+        weightedScore += weight * 0.5;
+      }
+    });
+    
+    // Calculate overall score as percentage
+    const currentScore = totalWeight > 0 ? (weightedScore / totalWeight) * 100 : 0;
+    setScore(currentScore);
+    
+    // Determine grade
+    let currentGrade = 'C';
+    if (currentScore >= 90) currentGrade = 'A';
+    else if (currentScore >= 75) currentGrade = 'B';
+    setGrade(currentGrade);
+  };
+
   const handleResponseChange = async (questionId: string, status: string) => {
-    setResponses(prev => ({ ...prev, [questionId]: status }));
+    // Update local state immediately for responsive UI
+    const updatedResponses = { ...responses, [questionId]: status };
+    setResponses(updatedResponses);
+
+    // Recalculate score with updated responses
+    calculateCurrentScore(updatedResponses, questions);
 
     try {
       const { data: existingResponse } = await supabase
@@ -124,7 +168,7 @@ const SecurityAssessmentQuestions = () => {
       }
 
       // Update progress
-      const answeredCount = Object.keys(responses).length;
+      const answeredCount = Object.keys(updatedResponses).length;
       const totalQuestions = questions.length;
       setProgress(totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0);
 
@@ -176,19 +220,19 @@ const SecurityAssessmentQuestions = () => {
       });
       
       // Calculate overall score as percentage
-      const score = totalWeight > 0 ? (weightedScore / totalWeight) * 100 : 0;
+      const finalScore = totalWeight > 0 ? (weightedScore / totalWeight) * 100 : 0;
       
       // Determine grade
-      let grade = 'C';
-      if (score >= 90) grade = 'A';
-      else if (score >= 75) grade = 'B';
+      let finalGrade = 'C';
+      if (finalScore >= 90) finalGrade = 'A';
+      else if (finalScore >= 75) finalGrade = 'B';
       
       // Update assessment with score and grade
       await supabase
         .from('security_assessments')
         .update({
-          score,
-          grade,
+          score: finalScore,
+          grade: finalGrade,
           completed: true,
           updated_at: new Date().toISOString()
         })
@@ -326,11 +370,46 @@ const SecurityAssessmentQuestions = () => {
               <div className="mt-3 flex items-center justify-end">
                 <div className="flex items-center text-xs text-cyber-muted">
                   <span>Weight: {question.weight}</span>
-                  <HelpCircle className="h-3 w-3 ml-1" title="Higher weight means this question impacts your security score more significantly" />
+                  <HelpCircle className="h-3 w-3 ml-1" aria-label="Higher weight means this question impacts your security score more significantly" />
                 </div>
               </div>
             </div>
           ))}
+        </div>
+        
+        <div className="glass-panel p-6 rounded-xl border border-cyber-neon/20 mb-8">
+          <h3 className="text-xl font-bold mb-4 gradient-text">Assessment Results</h3>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-sm text-cyber-muted mb-2">Score</h4>
+              <div className="text-4xl font-bold">{score.toFixed(2)}%</div>
+            </div>
+            <div>
+              <h4 className="text-sm text-cyber-muted mb-2">Grade</h4>
+              <div className={`text-4xl font-bold ${
+                grade === 'A' ? 'text-green-400' : 
+                grade === 'B' ? 'text-blue-400' : 
+                'text-amber-400'
+              }`}>
+                {grade}
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <p className="text-sm text-cyber-muted">
+              Required to generate report:
+            </p>
+            <ul className="text-sm list-disc list-inside mt-2 space-y-1">
+              <li className={assessment?.organization_name ? "text-green-400" : "text-red-400"}>
+                Organization name {assessment?.organization_name ? "✓" : "✗"}
+              </li>
+              <li className={Object.keys(responses).length === questions.length ? "text-green-400" : "text-red-400"}>
+                All questions answered ({Object.keys(responses).length}/{questions.length})
+              </li>
+            </ul>
+          </div>
         </div>
         
         <div className="flex justify-between items-center">

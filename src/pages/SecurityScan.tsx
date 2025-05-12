@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, ShieldCheck } from 'lucide-react';
+import { Shield, ShieldCheck, Activity, Search } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -50,7 +50,7 @@ const SecurityScan = () => {
               onClick={() => navigate('/vulnerability-scanner')}
               className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
             >
-              <Shield className="mr-2 h-4 w-4" />
+              <Search className="mr-2 h-4 w-4" />
               Scan Your Websites
             </Button>
           </div>
