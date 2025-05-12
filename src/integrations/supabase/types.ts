@@ -27,6 +27,74 @@ export type Database = {
         }
         Relationships: []
       }
+      assessment_responses: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          id: string
+          question_id: string
+          status: string
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+          status: string
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_responses_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "security_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "security_assessment_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_urls: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          id: string
+          url: string
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          id?: string
+          url: string
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_urls_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "security_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -309,6 +377,101 @@ export type Database = {
           scan_id?: string
           status?: string
           url?: string
+        }
+        Relationships: []
+      }
+      security_assessment_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      security_assessment_questions: {
+        Row: {
+          category_id: string
+          created_at: string
+          criticality: string
+          description: string | null
+          id: string
+          text: string
+          weight: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          criticality: string
+          description?: string | null
+          id?: string
+          text: string
+          weight?: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          criticality?: string
+          description?: string | null
+          id?: string
+          text?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_assessment_questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "security_assessment_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_assessments: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          grade: string | null
+          id: string
+          organization_name: string
+          score: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          grade?: string | null
+          id?: string
+          organization_name: string
+          score?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          grade?: string | null
+          id?: string
+          organization_name?: string
+          score?: number | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

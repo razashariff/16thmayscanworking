@@ -71,9 +71,14 @@ const VibeSecurity = () => {
               <p className="text-sm text-white/80 mb-4">
                 See Security Scores for AI tooling and our reviews on key security features of the AI tools.
               </p>
-              <Button className="w-full bg-cyber-purple/20 hover:bg-cyber-purple/30 text-white border border-cyber-purple/20" asChild>
-                <Link to="/security-scores">Security Scores</Link>
-              </Button>
+              <div className="grid grid-cols-1 gap-3">
+                <Button className="w-full bg-cyber-purple/20 hover:bg-cyber-purple/30 text-white border border-cyber-purple/20" asChild>
+                  <Link to="/security-scores">Security Scores</Link>
+                </Button>
+                <Button className="w-full bg-cyber-purple/20 hover:bg-cyber-purple/30 text-white border border-cyber-purple/20" asChild>
+                  <Link to="/security-assessment">Get Your Security Score</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
