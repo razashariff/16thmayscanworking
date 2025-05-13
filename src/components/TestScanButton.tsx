@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Shield, Loader } from 'lucide-react';
 import {
   Dialog,
@@ -43,10 +43,16 @@ const TestScanButton = () => {
     setIsLoading(true);
     
     try {
-      // Simple GET request with no custom headers to avoid CORS preflight
-      const encodedUrl = encodeURIComponent(url);
-      const response = await fetch(`https://fastapi-scanner-211605900220.europe-west2.run.app/scan?target_url=${encodedUrl}`, {
-        method: 'GET',
+      // Use POST request with JSON body
+      const response = await fetch(`https://fastapi-scanner-211605900220.europe-west2.run.app/scan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          target_url: url,
+          scan_type: 'full'
+        }),
         mode: 'cors', // Use cors mode for proper response handling
       });
       

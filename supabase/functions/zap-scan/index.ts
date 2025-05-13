@@ -62,16 +62,19 @@ serve(async (req) => {
         );
       }
 
-      // Call ZAP API to start scan - using GET instead of POST to avoid preflight
+      // Call ZAP API to start scan with POST and JSON body
       console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${scan_id}`);
       
-      // Use GET with query params instead of POST with body
-      const encodedTargetUrl = encodeURIComponent(target_url);
-      const zapResponse = await fetch(`${ZAP_API_URL}/scan?target_url=${encodedTargetUrl}&scan_type=${scan_type}&scan_id=${scan_id}`, {
-        method: 'GET',
+      const zapResponse = await fetch(`${ZAP_API_URL}/scan`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+          target_url: target_url,
+          scan_type: scan_type,
+          scan_id: scan_id
+        })
       });
 
       if (!zapResponse.ok) {
@@ -192,11 +195,11 @@ serve(async (req) => {
         }
       );
     } else if (req.method === 'GET') {
-      // Handle GET request with query params
+      // Handle GET request with query params to check status
       const params = url.searchParams;
-      const body = { scan_id: params.get('scan_id') };
+      const scan_id = params.get('scan_id');
       
-      if (!body.scan_id) {
+      if (!scan_id) {
         return new Response(
           JSON.stringify({ error: 'Missing scan_id parameter' }),
           {
@@ -206,8 +209,8 @@ serve(async (req) => {
         );
       }
       
-      console.log(`Checking status for scan ${body.scan_id} via query params`);
-      const zapResponse = await fetch(`${ZAP_API_URL}/scan/${body.scan_id}`, {
+      console.log(`Checking status for scan ${scan_id} via query params`);
+      const zapResponse = await fetch(`${ZAP_API_URL}/scan/${scan_id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
