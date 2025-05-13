@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -8,7 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
-const ZAP_API_URL = "https://fastapi-scanner-211605900220.us-central1.run.app"; // Fast API proxy server
+// Updated to use our own FastAPI server
+const FASTAPI_URL = "http://localhost:8000"; // Our own FastAPI server
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ZAP_SECRET = "8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a";
@@ -69,7 +69,7 @@ serve(async (req) => {
         console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${scan_id}`);
         
         try {
-          const zapResponse = await fetch(`${ZAP_API_URL}/scan`, {
+          const zapResponse = await fetch(`${FASTAPI_URL}/scan`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ serve(async (req) => {
       console.log(`Checking status for scan ${scan_id}`);
       
       try {
-        const zapResponse = await fetch(`${ZAP_API_URL}/scan/${scan_id}`, {
+        const zapResponse = await fetch(`${FASTAPI_URL}/scan/${scan_id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

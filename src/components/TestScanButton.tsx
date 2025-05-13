@@ -70,12 +70,12 @@ const TestScanButton = () => {
     if (!scanId || !token) return;
     
     try {
-      const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan/${scanId}`, {
+      // Updated to use our own FastAPI server
+      const response = await fetch(`http://localhost:8000/scan/${scanId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
+          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -143,12 +143,12 @@ const TestScanButton = () => {
         return;
       }
       
-      const response = await fetch('https://fastapi-scanner-211605900220.us-central1.run.app/scan', {
+      // Updated to use our own FastAPI server
+      const response = await fetch('http://localhost:8000/scan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ url })
       });
