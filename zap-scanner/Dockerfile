@@ -11,7 +11,6 @@ RUN pip3 install -r requirements.txt
 
 # Copy the API code
 COPY app.py .
-COPY zap_handler.py .
 
 # Expose the port
 EXPOSE 8000

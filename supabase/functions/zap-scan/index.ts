@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -7,11 +8,10 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
-// Updated to use our own FastAPI server
-const FASTAPI_URL = "http://localhost:8000"; // Our own FastAPI server
+// Direct URL to the ZAP Scanner API
+const ZAP_SCANNER_URL = "https://zap-scanner-211605900220.europe-west2.run.app/scan";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const ZAP_SECRET = "8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a";
 
 interface ScanRequest {
   target_url: string;
@@ -47,57 +47,67 @@ serve(async (req) => {
           );
         }
 
-        // Verify that the scan exists and belongs to the user
-        const { data: scan, error: scanError } = await supabase
-          .from('vulnerability_scans')
-          .select('*')
-          .eq('id', scan_id)
-          .eq('user_id', user_id)
-          .single();
+        // Special handling for test scans
+        let dbScanId = scan_id;
+        if (user_id === 'test-scan') {
+          // For test scans, we don't need to verify in the database
+          console.log(`Processing test scan for ${target_url} with ID ${scan_id}`);
+        } else {
+          // Verify that the scan exists and belongs to the user
+          const { data: scan, error: scanError } = await supabase
+            .from('vulnerability_scans')
+            .select('*')
+            .eq('id', scan_id)
+            .eq('user_id', user_id)
+            .single();
 
-        if (scanError || !scan) {
-          return new Response(
-            JSON.stringify({ error: 'Scan not found or not authorized' }),
-            { 
-              status: 404, 
-              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-            }
-          );
+          if (scanError || !scan) {
+            return new Response(
+              JSON.stringify({ error: 'Scan not found or not authorized' }),
+              { 
+                status: 404, 
+                headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+              }
+            );
+          }
+          
+          dbScanId = scan.id;
         }
 
-        // Call FastAPI proxy to start scan
-        console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${scan_id}`);
+        // Call ZAP Scanner directly
+        console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${dbScanId}`);
         
         try {
-          const zapResponse = await fetch(`${FASTAPI_URL}/scan`, {
+          const zapResponse = await fetch(ZAP_SCANNER_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ZAP_SECRET}`
             },
             body: JSON.stringify({
               url: target_url,
-              scan_id: scan_id,
+              scan_id: dbScanId,
               scan_type: scan_type
             })
           });
 
           if (!zapResponse.ok) {
             const error = await zapResponse.text();
-            console.error(`ZAP API error: ${error}`);
+            console.error(`ZAP Scanner error: ${error}`);
             
-            // Update scan status to failed
-            await supabase
-              .from('vulnerability_scans')
-              .update({ 
-                status: 'failed', 
-                summary: { error: `ZAP API error: ${error}` },
-                completed_at: new Date().toISOString()
-              })
-              .eq('id', scan_id);
+            // Update scan status to failed if it's a real scan (not test)
+            if (user_id !== 'test-scan') {
+              await supabase
+                .from('vulnerability_scans')
+                .update({ 
+                  status: 'failed', 
+                  summary: { error: `ZAP Scanner error: ${error}` },
+                  completed_at: new Date().toISOString()
+                })
+                .eq('id', dbScanId);
+            }
             
             return new Response(
-              JSON.stringify({ error: `ZAP API error: ${error}` }),
+              JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
               { 
                 status: 500, 
                 headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -107,14 +117,16 @@ serve(async (req) => {
 
           const zapData = await zapResponse.json();
           
-          // Update scan status to in_progress
-          await supabase
-            .from('vulnerability_scans')
-            .update({ 
-              status: 'in_progress',
-              progress: 0
-            })
-            .eq('id', scan_id);
+          // Update scan status to in_progress if it's a real scan
+          if (user_id !== 'test-scan') {
+            await supabase
+              .from('vulnerability_scans')
+              .update({ 
+                status: 'in_progress',
+                progress: 0
+              })
+              .eq('id', dbScanId);
+          }
 
           return new Response(
             JSON.stringify(zapData),
@@ -124,20 +136,22 @@ serve(async (req) => {
             }
           );
         } catch (fetchError) {
-          console.error(`Error contacting ZAP API: ${fetchError.message}`);
+          console.error(`Error contacting ZAP Scanner: ${fetchError.message}`);
           
-          // Update scan status to failed
-          await supabase
-            .from('vulnerability_scans')
-            .update({ 
-              status: 'failed', 
-              summary: { error: `Error contacting ZAP API: ${fetchError.message}` },
-              completed_at: new Date().toISOString()
-            })
-            .eq('id', scan_id);
+          // Update scan status to failed if it's a real scan
+          if (user_id !== 'test-scan') {
+            await supabase
+              .from('vulnerability_scans')
+              .update({ 
+                status: 'failed', 
+                summary: { error: `Error contacting ZAP Scanner: ${fetchError.message}` },
+                completed_at: new Date().toISOString()
+              })
+              .eq('id', dbScanId);
+          }
           
           return new Response(
-            JSON.stringify({ error: `Error contacting ZAP API: ${fetchError.message}` }),
+            JSON.stringify({ error: `Error contacting ZAP Scanner: ${fetchError.message}` }),
             { 
               status: 500, 
               headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -191,31 +205,34 @@ serve(async (req) => {
       console.log(`Checking status for scan ${scan_id}`);
       
       try {
-        const zapResponse = await fetch(`${FASTAPI_URL}/scan/${scan_id}`, {
+        // Call ZAP Scanner directly to check status
+        const zapResponse = await fetch(`${ZAP_SCANNER_URL}/${scan_id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ZAP_SECRET}`
           },
         });
 
         if (!zapResponse.ok) {
           if (zapResponse.status === 404) {
-            console.warn(`Scan ID ${scan_id} not found on ZAP API server`);
+            console.warn(`Scan ID ${scan_id} not found on ZAP Scanner server`);
             
-            // We'll update the database to mark this scan as failed
-            const { error: updateError } = await supabase
-              .from('vulnerability_scans')
-              .update({
-                status: 'failed',
-                progress: 0,
-                summary: { error: 'Scan not found on server' },
-                completed_at: new Date().toISOString()
-              })
-              .eq('id', scan_id);
-            
-            if (updateError) {
-              console.error(`Error updating scan status to failed: ${updateError.message}`);
+            // Check if this is a normal scan (not test)
+            if (!scan_id.startsWith('test-')) {
+              // We'll update the database to mark this scan as failed
+              const { error: updateError } = await supabase
+                .from('vulnerability_scans')
+                .update({
+                  status: 'failed',
+                  progress: 0,
+                  summary: { error: 'Scan not found on server' },
+                  completed_at: new Date().toISOString()
+                })
+                .eq('id', scan_id);
+              
+              if (updateError) {
+                console.error(`Error updating scan status to failed: ${updateError.message}`);
+              }
             }
             
             return new Response(
@@ -234,9 +251,9 @@ serve(async (req) => {
           }
           
           const error = await zapResponse.text();
-          console.error(`ZAP API error: ${error}`);
+          console.error(`ZAP Scanner error: ${error}`);
           return new Response(
-            JSON.stringify({ error: `ZAP API error: ${error}` }),
+            JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
             { 
               status: zapResponse.status, 
               headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -246,50 +263,53 @@ serve(async (req) => {
 
         const zapData = await zapResponse.json();
         
-        // If scan is completed, store the report in Supabase storage
-        if (zapData.status === 'completed' && zapData.results) {
-          const { data: scan, error: scanError } = await supabase
-            .from('vulnerability_scans')
-            .select('user_id')
-            .eq('id', scan_id)
-            .single();
+        // Check if this is a normal scan (not test)
+        if (!scan_id.startsWith('test-')) {
+          // If scan is completed, store the report in Supabase storage
+          if (zapData.status === 'completed' && zapData.results) {
+            const { data: scan, error: scanError } = await supabase
+              .from('vulnerability_scans')
+              .select('user_id')
+              .eq('id', scan_id)
+              .single();
 
-          if (!scanError && scan) {
-            // Store JSON report in storage
-            const reportPath = `${scan.user_id}/${scan_id}.json`;
-            const { error: storageError } = await supabase
-              .storage
-              .from('scan_reports')
-              .upload(reportPath, JSON.stringify(zapData.results), {
-                contentType: 'application/json',
-                upsert: true,
-              });
+            if (!scanError && scan) {
+              // Store JSON report in storage
+              const reportPath = `${scan.user_id}/${scan_id}.json`;
+              const { error: storageError } = await supabase
+                .storage
+                .from('scan_reports')
+                .upload(reportPath, JSON.stringify(zapData.results), {
+                  contentType: 'application/json',
+                  upsert: true,
+                });
 
-            if (storageError) {
-              console.error('Error storing report:', storageError);
-            } else {
-              // Update scan with report path and summary
-              await supabase
-                .from('vulnerability_scans')
-                .update({
-                  status: 'completed',
-                  progress: 100,
-                  report_path: reportPath,
-                  summary: zapData.results,
-                  completed_at: new Date().toISOString()
-                })
-                .eq('id', scan_id);
+              if (storageError) {
+                console.error('Error storing report:', storageError);
+              } else {
+                // Update scan with report path and summary
+                await supabase
+                  .from('vulnerability_scans')
+                  .update({
+                    status: 'completed',
+                    progress: 100,
+                    report_path: reportPath,
+                    summary: zapData.results,
+                    completed_at: new Date().toISOString()
+                  })
+                  .eq('id', scan_id);
+              }
             }
+          } else if (zapData.status !== 'completed') {
+            // Just update progress for in-progress scans
+            await supabase
+              .from('vulnerability_scans')
+              .update({
+                status: zapData.status,
+                progress: zapData.progress
+              })
+              .eq('id', scan_id);
           }
-        } else if (zapData.status !== 'completed') {
-          // Just update progress for in-progress scans
-          await supabase
-            .from('vulnerability_scans')
-            .update({
-              status: zapData.status,
-              progress: zapData.progress
-            })
-            .eq('id', scan_id);
         }
 
         return new Response(
@@ -300,9 +320,9 @@ serve(async (req) => {
           }
         );
       } catch (fetchError) {
-        console.error(`Error contacting ZAP API: ${fetchError.message}`);
+        console.error(`Error contacting ZAP Scanner: ${fetchError.message}`);
         return new Response(
-          JSON.stringify({ error: `Error contacting ZAP API: ${fetchError.message}` }),
+          JSON.stringify({ error: `Error contacting ZAP Scanner: ${fetchError.message}` }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 

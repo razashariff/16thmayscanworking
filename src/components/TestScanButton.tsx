@@ -70,17 +70,18 @@ const TestScanButton = () => {
     if (!scanId || !token) return;
     
     try {
-      // Updated to use our own FastAPI server
-      const response = await fetch(`http://localhost:8000/scan/${scanId}`, {
+      // Using Supabase Edge Function instead of direct FastAPI call
+      const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+        body: { scan_id: scanId }
       });
       
-      if (response.ok) {
-        const data = await response.json();
+      if (error) {
+        console.error('Error checking scan status:', error);
+        return;
+      }
+      
+      if (data) {
         setScanStatus(data.status);
         
         if (data.status === 'completed') {
@@ -96,8 +97,6 @@ const TestScanButton = () => {
             description: data.error || "An error occurred during the scan"
           });
         }
-      } else {
-        console.error('Error checking scan status:', response.statusText);
       }
     } catch (error) {
       console.error('Error checking scan status:', error);
@@ -143,22 +142,21 @@ const TestScanButton = () => {
         return;
       }
       
-      // Updated to use our own FastAPI server
-      const response = await fetch('http://localhost:8000/scan', {
+      // Using Supabase Edge Function instead of direct FastAPI call
+      const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ url })
+        body: {
+          target_url: url,
+          scan_type: 'quick',
+          scan_id: `test-${Date.now()}`, // Generate a temporary ID for test scans
+          user_id: 'test-scan' // Special identifier for test scans
+        }
       });
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      if (error) {
+        throw new Error(`Edge function error: ${error.message}`);
       }
       
-      const data = await response.json();
       console.log("Scan response:", data);
       setScanId(data.scan_id);
       setScanStatus('pending');

@@ -2,7 +2,7 @@
 project_id = "jjdzrxfriezvfxjacche"
 
 [functions.zap-scan]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-checkout]
 verify_jwt = true
