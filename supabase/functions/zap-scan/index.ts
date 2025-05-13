@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ZAP_API_URL = "https://us-central1-run.app/zapscanner-service";
+const ZAP_API_URL = "https://fastapi-scanner-211605900220.europe-west2.run.app";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
@@ -184,6 +184,50 @@ serve(async (req) => {
           .eq('id', scan_id);
       }
 
+      return new Response(
+        JSON.stringify(zapData),
+        { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      );
+    } else if (req.method === 'GET') {
+      // Handle GET request with query params
+      const params = url.searchParams;
+      const body = { scan_id: params.get('scan_id') };
+      
+      if (!body.scan_id) {
+        return new Response(
+          JSON.stringify({ error: 'Missing scan_id parameter' }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          }
+        );
+      }
+      
+      console.log(`Checking status for scan ${body.scan_id} via query params`);
+      const zapResponse = await fetch(`${ZAP_API_URL}/scan/${body.scan_id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!zapResponse.ok) {
+        const error = await zapResponse.text();
+        console.error(`ZAP API error: ${error}`);
+        return new Response(
+          JSON.stringify({ error: `ZAP API error: ${error}` }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+      
+      const zapData = await zapResponse.json();
+      
       return new Response(
         JSON.stringify(zapData),
         { 
