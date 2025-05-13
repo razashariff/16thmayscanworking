@@ -62,18 +62,16 @@ serve(async (req) => {
         );
       }
 
-      // Call ZAP API to start scan
+      // Call ZAP API to start scan - using GET instead of POST to avoid preflight
       console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${scan_id}`);
-      const zapResponse = await fetch(`${ZAP_API_URL}/scan`, {
-        method: 'POST',
+      
+      // Use GET with query params instead of POST with body
+      const encodedTargetUrl = encodeURIComponent(target_url);
+      const zapResponse = await fetch(`${ZAP_API_URL}/scan?target_url=${encodedTargetUrl}&scan_type=${scan_type}&scan_id=${scan_id}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          target_url,
-          scan_type,
-          scan_id
-        }),
+        }
       });
 
       if (!zapResponse.ok) {

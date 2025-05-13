@@ -4,8 +4,18 @@ from pydantic import BaseModel
 from typing import Optional
 import zap_handler
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 class ScanRequest(BaseModel):
     target_url: str
@@ -22,9 +32,17 @@ async def root():
     return {"status": "ZAP Scanner API is running"}
 
 @app.post("/scan")
-async def start_scan(scan_request: ScanRequest):
+async def start_scan_post(scan_request: ScanRequest):
     try:
         scan_id = zap_handler.start_scan(scan_request.target_url, scan_request.scan_type)
+        return {"scan_id": scan_id, "status": "started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/scan")
+async def start_scan_get(target_url: str, scan_type: str = "full"):
+    try:
+        scan_id = zap_handler.start_scan(target_url, scan_type)
         return {"scan_id": scan_id, "status": "started"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
