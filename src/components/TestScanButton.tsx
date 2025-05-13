@@ -44,7 +44,7 @@ const TestScanButton = () => {
     
     try {
       // Use POST request with JSON body
-      const response = await fetch(`https://fastapi-scanner-211605900220.europe-west2.run.app/scan`, {
+      const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
