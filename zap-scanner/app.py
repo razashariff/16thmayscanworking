@@ -8,13 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Add CORS middleware
+# Add CORS middleware with proper configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
+    allow_methods=["*"],  # Allows all methods including OPTIONS for preflight
     allow_headers=["*"],  # Allows all headers
+    expose_headers=["*"]  # Expose all headers
 )
 
 class ScanRequest(BaseModel):

@@ -53,7 +53,6 @@ const TestScanButton = () => {
           target_url: url,
           scan_type: 'full'
         }),
-        mode: 'cors', // Use cors mode for proper response handling
       });
       
       if (!response.ok) {
