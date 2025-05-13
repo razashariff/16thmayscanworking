@@ -20,6 +20,9 @@ const TestScanButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [scanId, setScanId] = useState<string | null>(null);
+  const [scanStatus, setScanStatus] = useState<string | null>(null);
+  const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Get the JWT token from Supabase session when component mounts
   useEffect(() => {
@@ -41,8 +44,65 @@ const TestScanButton = () => {
     
     return () => {
       subscription.unsubscribe();
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, []);
+
+  // Effect to poll for scan status
+  useEffect(() => {
+    if (scanId && scanStatus === 'pending') {
+      const interval = setInterval(async () => {
+        await checkScanStatus();
+      }, 5000);
+      
+      setPollInterval(interval);
+      
+      return () => clearInterval(interval);
+    } else if (scanStatus === 'completed' || scanStatus === 'failed') {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        setPollInterval(null);
+      }
+    }
+  }, [scanId, scanStatus]);
+
+  const checkScanStatus = async () => {
+    if (!scanId || !token) return;
+    
+    try {
+      const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan/${scanId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setScanStatus(data.status);
+        
+        if (data.status === 'completed') {
+          setResults(data.results);
+          toast({
+            title: "Scan Completed",
+            description: "Vulnerability scan completed successfully!"
+          });
+        } else if (data.status === 'failed') {
+          toast({
+            variant: "destructive",
+            title: "Scan Failed",
+            description: data.error || "An error occurred during the scan"
+          });
+        }
+      } else {
+        console.error('Error checking scan status:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error checking scan status:', error);
+    }
+  };
 
   const runTestScan = async () => {
     if (!url) {
@@ -66,7 +126,9 @@ const TestScanButton = () => {
     }
 
     setIsLoading(true);
-    console.log("Scanning URL:", url);
+    setResults(null);
+    setScanId(null);
+    setScanStatus(null);
     
     try {
       // Check if we have a token
@@ -81,22 +143,15 @@ const TestScanButton = () => {
         return;
       }
       
-      const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan`, {
+      const response = await fetch('https://fastapi-scanner-211605900220.us-central1.run.app/scan', {
         method: 'POST',
-        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
         },
-        body: JSON.stringify({
-          url: url
-        })
+        body: JSON.stringify({ url })
       });
-      
-      if (response.status === 401) {
-        throw new Error("Unauthorized – check your authentication!");
-      }
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -105,7 +160,9 @@ const TestScanButton = () => {
       
       const data = await response.json();
       console.log("Scan response:", data);
-      setResults(data);
+      setScanId(data.scan_id);
+      setScanStatus('pending');
+      
       toast({
         title: "Success",
         description: "Scan initiated successfully"
@@ -156,6 +213,13 @@ const TestScanButton = () => {
               </div>
             )}
 
+            {scanStatus === 'pending' && (
+              <div className="bg-blue-950/30 border border-blue-500/30 p-3 rounded-md text-blue-200 text-sm flex items-center">
+                <Loader className="animate-spin h-4 w-4 mr-2" />
+                Scan in progress... This may take several minutes.
+              </div>
+            )}
+
             {results && (
               <div className="bg-cyber-dark/80 border border-cyber-neon/30 p-4 rounded-md max-h-60 overflow-auto">
                 <pre className="text-xs whitespace-pre-wrap text-cyber-text">
@@ -171,7 +235,7 @@ const TestScanButton = () => {
             </Button>
             <Button 
               onClick={runTestScan} 
-              disabled={isLoading || !token}
+              disabled={isLoading || !token || scanStatus === 'pending'}
               className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
             >
               {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}

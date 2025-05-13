@@ -69,10 +69,11 @@ serve(async (req) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer 8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a',
+          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
         },
         body: JSON.stringify({
-          target_url: target_url,
-          scan_type: scan_type,
+          url: target_url,
           scan_id: scan_id
         })
       });
@@ -124,6 +125,8 @@ serve(async (req) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer 8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a',
+          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
         },
       });
 
@@ -214,6 +217,8 @@ serve(async (req) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer 8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a',
+          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
         },
       });
       

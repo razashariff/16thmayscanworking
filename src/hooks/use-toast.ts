@@ -42,11 +42,11 @@ type Action =
     }
   | {
       type: ActionType["DISMISS_TOAST"]
-      toastId?: string
+      toastId?: ToasterToast["id"]
     }
   | {
       type: ActionType["REMOVE_TOAST"]
-      toastId?: string
+      toastId?: ToasterToast["id"]
     }
 
 interface State {
@@ -77,11 +77,15 @@ const reducer = (state: State, action: Action): State => {
       // ! Side effects ! - This could be extracted into a dismissToast() action,
       // but I'll keep it here for simplicity
       if (toastId) {
-        addToRemoveQueue(toastId)
+        if (toastTimeouts.has(toastId)) {
+          clearTimeout(toastTimeouts.get(toastId))
+          toastTimeouts.delete(toastId)
+        }
       } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id)
-        })
+        for (const [id, timeout] of toastTimeouts.entries()) {
+          clearTimeout(timeout)
+          toastTimeouts.delete(id)
+        }
       }
 
       return {
@@ -121,7 +125,9 @@ function dispatch(action: Action) {
   })
 }
 
-function toast({ ...props }: Omit<ToasterToast, "id">) {
+type Toast = Omit<ToasterToast, "id">
+
+function toast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -129,7 +135,6 @@ function toast({ ...props }: Omit<ToasterToast, "id">) {
       type: actionTypes.UPDATE_TOAST,
       toast: { ...props, id },
     })
-
   const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id })
 
   dispatch({
@@ -138,14 +143,14 @@ function toast({ ...props }: Omit<ToasterToast, "id">) {
       ...props,
       id,
       open: true,
-      onOpenChange: (open: boolean) => {
+      onOpenChange: (open) => {
         if (!open) dismiss()
       },
     },
   })
 
   return {
-    id,
+    id: id,
     dismiss,
     update,
   }
