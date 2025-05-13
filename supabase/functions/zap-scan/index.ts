@@ -30,7 +30,7 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     const path = url.pathname.split('/').pop();
-
+    
     // Handle initiating a scan
     if (req.method === 'POST') {
       try {
@@ -163,8 +163,18 @@ serve(async (req) => {
       if (path && path !== 'zap-scan') {
         scan_id = path;
       } 
-      // Check if scan_id is in query parameters
+      // Check if scan_id is in the request body
       else {
+        try {
+          const body = await req.json();
+          scan_id = body.scan_id;
+        } catch (e) {
+          console.error("Error parsing request body:", e);
+        }
+      }
+      
+      // If still no scan_id, check query parameters as fallback
+      if (!scan_id) {
         scan_id = url.searchParams.get('scan_id');
       }
       
