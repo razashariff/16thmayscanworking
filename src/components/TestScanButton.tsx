@@ -86,7 +86,8 @@ const TestScanButton = () => {
         mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'x-zap-secret': '8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a'
         },
         body: JSON.stringify({
           url: url
