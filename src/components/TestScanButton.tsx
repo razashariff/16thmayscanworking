@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Shield, Loader } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,30 @@ const TestScanButton = () => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  // Get the JWT token from Supabase session when component mounts
+  useEffect(() => {
+    const getToken = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setToken(data.session.access_token);
+      }
+    };
+    
+    getToken();
+    
+    // Set up auth state listener to update token when auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setToken(session?.access_token || null);
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const runTestScan = async () => {
     if (!url) {
@@ -44,16 +69,29 @@ const TestScanButton = () => {
     console.log("Scanning URL:", url);
     
     try {
-      // Updated to use the correct JSON format
+      // Authentication headers with JWT token
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Only add Authorization header if we have a token
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        console.warn('No authentication token available');
+      }
+      
       const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           url: url
         })
       });
+      
+      if (response.status === 401) {
+        throw new Error("Unauthorized – check your authentication!");
+      }
       
       if (!response.ok) {
         throw new Error(`Server responded with ${response.status}`);
@@ -71,7 +109,7 @@ const TestScanButton = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to complete scan. Check console for details."
+        description: error instanceof Error ? error.message : "Failed to complete scan"
       });
     } finally {
       setIsLoading(false);
@@ -105,6 +143,12 @@ const TestScanButton = () => {
               onChange={(e) => setUrl(e.target.value)}
               className="bg-cyber-dark/60 border-cyber-neon/30 text-cyber-text"
             />
+
+            {!token && (
+              <div className="bg-amber-950/30 border border-amber-500/30 p-3 rounded-md text-amber-200 text-sm">
+                Not logged in. Authentication may be required for scanning.
+              </div>
+            )}
 
             {results && (
               <div className="bg-cyber-dark/80 border border-cyber-neon/30 p-4 rounded-md max-h-60 overflow-auto">
