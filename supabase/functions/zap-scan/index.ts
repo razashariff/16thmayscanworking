@@ -8,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
-const ZAP_API_URL = "https://fastapi-scanner-211605900220.us-central1.run.app";
+const ZAP_API_URL = "https://fastapi-scanner-211605900220.us-central1.run.app"; // Fast API proxy server
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const ZAP_SECRET = "8bb1c57ce11343100ceb53cfccf9e48373bacce0773b6f91c11e20a8f0f992a";
@@ -65,7 +65,7 @@ serve(async (req) => {
           );
         }
 
-        // Call ZAP API to start scan with POST and JSON body
+        // Call FastAPI proxy to start scan
         console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${scan_id}`);
         
         try {
@@ -73,12 +73,12 @@ serve(async (req) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ZAP_SECRET}`,
-              'x-zap-secret': ZAP_SECRET
+              'Authorization': `Bearer ${ZAP_SECRET}`
             },
             body: JSON.stringify({
               url: target_url,
-              scan_id: scan_id
+              scan_id: scan_id,
+              scan_type: scan_type
             })
           });
 
@@ -195,8 +195,7 @@ serve(async (req) => {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ZAP_SECRET}`,
-            'x-zap-secret': ZAP_SECRET
+            'Authorization': `Bearer ${ZAP_SECRET}`
           },
         });
 
