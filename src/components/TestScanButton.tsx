@@ -69,21 +69,25 @@ const TestScanButton = () => {
     console.log("Scanning URL:", url);
     
     try {
-      // Authentication headers with JWT token
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      
-      // Only add Authorization header if we have a token
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      } else {
+      // Check if we have a token
+      if (!token) {
         console.warn('No authentication token available');
+        toast({
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "Please log in to perform a scan"
+        });
+        setIsLoading(false);
+        return;
       }
       
       const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan`, {
         method: 'POST',
-        headers,
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           url: url
         })
@@ -94,7 +98,8 @@ const TestScanButton = () => {
       }
       
       if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Server responded with ${response.status}: ${errorText}`);
       }
       
       const data = await response.json();
@@ -146,7 +151,7 @@ const TestScanButton = () => {
 
             {!token && (
               <div className="bg-amber-950/30 border border-amber-500/30 p-3 rounded-md text-amber-200 text-sm">
-                Not logged in. Authentication may be required for scanning.
+                Not logged in. Authentication is required for scanning.
               </div>
             )}
 
@@ -165,7 +170,7 @@ const TestScanButton = () => {
             </Button>
             <Button 
               onClick={runTestScan} 
-              disabled={isLoading}
+              disabled={isLoading || !token}
               className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
             >
               {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
