@@ -67,17 +67,20 @@ const TestScanButton = () => {
   }, [scanId, scanStatus]);
 
   const checkScanStatus = async () => {
-    if (!scanId || !token) return;
+    if (!scanId) return;
     
     try {
-      // Using Supabase Edge Function instead of direct FastAPI call
+      console.log(`Checking status for scan ${scanId}`);
+      
+      // Using Supabase edge function to check scan status
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        body: { scan_id: scanId }
+        body: { scan_id: scanId },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
       });
       
       if (error) {
-        console.error('Error checking scan status:', error);
+        console.error('Edge function error:', error);
         return;
       }
       
@@ -130,27 +133,19 @@ const TestScanButton = () => {
     setScanStatus(null);
     
     try {
-      // Check if we have a token
-      if (!token) {
-        console.warn('No authentication token available');
-        toast({
-          variant: "destructive",
-          title: "Authentication Required",
-          description: "Please log in to perform a scan"
-        });
-        setIsLoading(false);
-        return;
-      }
+      // Generate a temporary scan ID for test scans
+      const tempScanId = `test-${Date.now()}`;
       
-      // Using Supabase Edge Function instead of direct FastAPI call
+      // Using Supabase edge function instead of direct FastAPI call
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'POST',
         body: {
           target_url: url,
           scan_type: 'quick',
-          scan_id: `test-${Date.now()}`, // Generate a temporary ID for test scans
+          scan_id: tempScanId,
           user_id: 'test-scan' // Special identifier for test scans
-        }
+        },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
       });
       
       if (error) {
@@ -158,7 +153,7 @@ const TestScanButton = () => {
       }
       
       console.log("Scan response:", data);
-      setScanId(data.scan_id);
+      setScanId(data.scan_id || tempScanId);
       setScanStatus('pending');
       
       toast({
