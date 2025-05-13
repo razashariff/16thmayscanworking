@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 import { Shield, Loader } from 'lucide-react';
 import {
   Dialog,
@@ -41,9 +41,10 @@ const TestScanButton = () => {
     }
 
     setIsLoading(true);
+    console.log("Scanning URL:", url);
     
     try {
-      // Use POST request with JSON body
+      // Simplify the fetch call to your endpoint
       const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan`, {
         method: 'POST',
         headers: {
@@ -52,7 +53,7 @@ const TestScanButton = () => {
         body: JSON.stringify({
           target_url: url,
           scan_type: 'full'
-        }),
+        })
       });
       
       if (!response.ok) {
@@ -60,10 +61,11 @@ const TestScanButton = () => {
       }
       
       const data = await response.json();
+      console.log("Scan response:", data);
       setResults(data);
       toast({
         title: "Success",
-        description: "Scan completed successfully"
+        description: "Scan initiated successfully"
       });
     } catch (error) {
       console.error('Error during test scan:', error);
