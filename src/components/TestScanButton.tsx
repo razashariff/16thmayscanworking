@@ -44,15 +44,14 @@ const TestScanButton = () => {
     console.log("Scanning URL:", url);
     
     try {
-      // Simplify the fetch call to your endpoint
+      // Updated to use the correct JSON format
       const response = await fetch(`https://fastapi-scanner-211605900220.us-central1.run.app/scan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          target_url: url,
-          scan_type: 'full'
+          url: url
         })
       });
       
