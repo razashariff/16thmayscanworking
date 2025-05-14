@@ -70,19 +70,21 @@ serve(async (req) => {
       // Extract scan ID from request - support either URL params or body
       let scanId = null
       
-      // Try to get scan ID from URL params
-      const url = new URL(req.url)
-      scanId = url.searchParams.get("scan_id")
+      try {
+        // First try to get scan_id from body (for our frontend API)
+        const body = await req.json()
+        scanId = body.scan_id
+        console.log("Found scan_id in request body:", scanId)
+      } catch (e) {
+        // Body may not be JSON or may not exist, which is fine
+        console.log("No JSON body or couldn't parse body, checking URL params")
+      }
       
-      // If not in URL params, try to get from body
+      // If not in body, try to get from URL params
       if (!scanId) {
-        try {
-          const body = await req.json()
-          scanId = body.scan_id
-        } catch (e) {
-          // Body may not be JSON or may not exist
-          console.log("No JSON body or scan_id in request")
-        }
+        const url = new URL(req.url)
+        scanId = url.searchParams.get("scan_id")
+        console.log("Found scan_id in URL params:", scanId)
       }
       
       if (!scanId) {
