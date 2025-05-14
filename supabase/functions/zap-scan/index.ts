@@ -179,8 +179,10 @@ serve(async (req) => {
     }
     // Handle checking scan status - GET request
     else if (req.method === 'GET') {
-      // Try to get scan_id from query parameters first
-      let scan_id = url.searchParams.get('scan_id');
+      let scan_id = null;
+      
+      // Try to get scan_id from the URL search params
+      scan_id = url.searchParams.get('scan_id');
       
       // If no scan_id in query params, try to get from the path
       if (!scan_id && url.pathname.includes('/')) {
@@ -192,7 +194,7 @@ serve(async (req) => {
         }
       }
       
-      // If still no scan_id, try to get from request body as fallback
+      // If still no scan_id, try to get from request body
       if (!scan_id) {
         try {
           const contentType = req.headers.get('content-type');
@@ -202,7 +204,6 @@ serve(async (req) => {
             if (scan_id) console.log(`Found scan_id in request body: ${scan_id}`);
           }
         } catch (e) {
-          // If parsing fails, that's okay, we'll check other sources
           console.log("No JSON body or not parseable");
         }
       }

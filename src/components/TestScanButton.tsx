@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,11 +76,11 @@ const TestScanButton = () => {
       console.log(`Checking status for scan ${scanId}`);
       setRetryCount(0); // Reset retry count on new attempt
       
-      // Using Supabase edge function to check scan status (using queryparams for GET request)
+      // Using Supabase edge function to check scan status - pass scan_id as part of the body
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        query: { scan_id: scanId }
+        body: { scan_id: scanId }
       });
       
       if (error) {
