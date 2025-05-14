@@ -40,29 +40,38 @@ serve(async (req) => {
     
     // Handle initiating a scan
     if (req.method === 'POST') {
+      // Check if there's actually a request body before trying to parse it
+      const contentType = req.headers.get('content-type') || '';
+      const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
+      
+      // Only attempt to parse JSON if there's content and it's the right type
+      if (!contentType.includes('application/json') || contentLength <= 0) {
+        console.error("Missing or invalid request body");
+        return new Response(
+          JSON.stringify({ error: 'Request must include a JSON body with target_url, scan_id, and user_id' }),
+          { 
+            status: 400, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+      
+      // Now it's safe to try parsing the JSON body
       let body: ScanRequest;
       
       try {
-        // Only try to parse JSON if there's actually a body
-        const contentType = req.headers.get('content-type');
-        const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
+        const requestBody = await req.text();
+        console.log("Request body received:", requestBody);
         
-        if (contentType && contentType.includes('application/json') && contentLength > 0) {
-          const requestBody = await req.text();
-          console.log("Request body received:", requestBody);
-          
-          if (requestBody) {
-            body = JSON.parse(requestBody);
-          } else {
-            throw new Error('Empty request body');
-          }
-        } else {
-          throw new Error('No JSON content in request');
+        if (!requestBody) {
+          throw new Error('Empty request body');
         }
+        
+        body = JSON.parse(requestBody);
       } catch (parseError) {
         console.error("Failed to parse JSON body:", parseError);
         return new Response(
-          JSON.stringify({ error: 'Invalid or missing JSON in request body' }),
+          JSON.stringify({ error: 'Invalid JSON in request body' }),
           { 
             status: 400, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -242,20 +251,21 @@ serve(async (req) => {
       
       // 3. Try to get from request body as last resort - BUT safely
       if (!scan_id) {
-        try {
-          const contentType = req.headers.get('content-type');
-          const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
-          
-          if (contentType && contentType.includes('application/json') && contentLength > 0) {
+        // Only try to parse JSON if there's a body with the right content type
+        const contentType = req.headers.get('content-type') || '';
+        const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
+        
+        if (contentType.includes('application/json') && contentLength > 0) {
+          try {
             const text = await req.text();
             if (text) {
               const body = JSON.parse(text);
               scan_id = body.scan_id;
               if (scan_id) console.log(`Found scan_id in request body: ${scan_id}`);
             }
+          } catch (e) {
+            console.log("No valid JSON body found or could not parse body: ", e.message);
           }
-        } catch (e) {
-          console.log("No valid JSON body found: ", e.message);
         }
       }
       

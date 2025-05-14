@@ -105,7 +105,7 @@ const TestScanButton = () => {
       // Generate a temporary scan ID for test scans
       const tempScanId = `test-${Date.now()}`;
       
-      // Using Supabase edge function with appropriate parameters
+      // Using Supabase edge function with appropriate parameters and explicit content-type
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'POST',
         body: {
