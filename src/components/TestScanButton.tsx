@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,7 +81,6 @@ const TestScanButton = () => {
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        responseType: 'json',
         query: { scan_id: scanId }
       });
       
@@ -178,8 +178,7 @@ const TestScanButton = () => {
           scan_id: tempScanId,
           user_id: 'test-scan' // Special identifier for test scans
         },
-        headers: { 'Content-Type': 'application/json' },
-        responseType: 'json'
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (error) {
