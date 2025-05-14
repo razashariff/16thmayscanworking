@@ -32,6 +32,10 @@ serve(async (req) => {
     const url = new URL(req.url);
     console.log(`Handling ${req.method} request for URL: ${url.pathname}, search params: ${url.search}`);
     
+    // Extract scan ID from path if present (format: /zap-scan/{scanId})
+    const pathSegments = url.pathname.split('/');
+    const pathScanId = pathSegments.length > 2 ? pathSegments[pathSegments.length - 1] : null;
+    
     // Handle initiating a scan
     if (req.method === 'POST') {
       try {
@@ -181,20 +185,19 @@ serve(async (req) => {
     else if (req.method === 'GET') {
       let scan_id = null;
       
-      // Try to get scan_id from the URL search params
-      scan_id = url.searchParams.get('scan_id');
-      
-      // If no scan_id in query params, try to get from the path
-      if (!scan_id && url.pathname.includes('/')) {
-        const pathParts = url.pathname.split('/');
-        const lastPart = pathParts[pathParts.length - 1];
-        if (lastPart && lastPart !== 'zap-scan') {
-          scan_id = lastPart;
-          console.log(`Found scan_id in path: ${scan_id}`);
-        }
+      // 1. Try to get scan_id from the path directly (highest priority) - /zap-scan/123456
+      if (pathScanId && pathScanId !== 'zap-scan') {
+        scan_id = pathScanId;
+        console.log(`Found scan_id in path segments: ${scan_id}`);
       }
       
-      // If still no scan_id, try to get from request body
+      // 2. Try to get scan_id from the URL search params
+      if (!scan_id) {
+        scan_id = url.searchParams.get('scan_id');
+        if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
+      }
+      
+      // 3. Try to get from request body as last resort
       if (!scan_id) {
         try {
           const contentType = req.headers.get('content-type');

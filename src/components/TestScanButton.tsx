@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,35 +22,10 @@ const TestScanButton = () => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [scanId, setScanId] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<string | null>(null);
   const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-
-  // Get the JWT token from Supabase session when component mounts
-  useEffect(() => {
-    const getToken = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setToken(data.session.access_token);
-      }
-    };
-    
-    getToken();
-    
-    // Set up auth state listener to update token when auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setToken(session?.access_token || null);
-      }
-    );
-    
-    return () => {
-      subscription.unsubscribe();
-      if (pollInterval) clearInterval(pollInterval);
-    };
-  }, []);
 
   // Effect to poll for scan status
   useEffect(() => {
@@ -76,11 +52,10 @@ const TestScanButton = () => {
       console.log(`Checking status for scan ${scanId}`);
       setRetryCount(0); // Reset retry count on new attempt
       
-      // Using Supabase edge function to check scan status - pass scan_id as part of the body
-      const { data, error } = await supabase.functions.invoke('zap-scan', {
+      // Using path parameters for GET request
+      const { data, error } = await supabase.functions.invoke(`zap-scan/${scanId}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: { scan_id: scanId }
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (error) {
