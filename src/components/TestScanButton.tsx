@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,9 +31,10 @@ const TestScanButton = () => {
       setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
       
-      // Using path parameters for GET request
-      const { data, error } = await supabase.functions.invoke(`zap-scan/${scanId}`, {
+      // Using path parameter for GET request
+      const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
+        path: `/${scanId}`,
         headers: { 'Content-Type': 'application/json' }
       });
       
@@ -105,22 +105,19 @@ const TestScanButton = () => {
       // Generate a temporary scan ID for test scans
       const tempScanId = `test-${Date.now()}`;
       
-      console.log("Sending scan request with payload:", {
+      const payload = {
         target_url: url,
         scan_type: 'quick',
         scan_id: tempScanId,
         user_id: 'test-scan'
-      });
+      };
+      
+      console.log("Sending scan request with payload:", payload);
       
       // Using Supabase edge function with appropriate parameters and explicit content-type
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'POST',
-        body: {
-          target_url: url,
-          scan_type: 'quick',
-          scan_id: tempScanId,
-          user_id: 'test-scan' // Special identifier for test scans
-        },
+        body: payload,
         headers: { 'Content-Type': 'application/json' }
       });
       

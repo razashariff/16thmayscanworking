@@ -40,11 +40,9 @@ serve(async (req) => {
     
     // Handle initiating a scan - POST request
     if (req.method === 'POST') {
-      let body: ScanRequest;
-      const contentType = req.headers.get('content-type') || '';
-      
-      // Check that we have the right content type for POST
-      if (!contentType.includes('application/json')) {
+      // Check for valid content type
+      const contentType = req.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
         console.error("Invalid content type:", contentType);
         return new Response(
           JSON.stringify({ error: 'Content-Type must be application/json' }),
@@ -52,7 +50,18 @@ serve(async (req) => {
         );
       }
       
-      // Safely attempt to parse the request body
+      // Check for content length
+      const contentLength = req.headers.get('content-length');
+      if (!contentLength || parseInt(contentLength, 10) <= 0) {
+        console.error("Empty request body");
+        return new Response(
+          JSON.stringify({ error: 'Request body cannot be empty' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+      
+      // Safely parse the request body
+      let body: ScanRequest;
       try {
         // Clone the request before consuming its body
         const clonedReq = req.clone();
@@ -60,15 +69,16 @@ serve(async (req) => {
         console.log("Raw request body:", text);
         
         if (!text || text.trim() === '') {
-          console.error("Empty request body");
+          console.error("Empty request body text");
           return new Response(
-            JSON.stringify({ error: 'Request body cannot be empty' }),
+            JSON.stringify({ error: 'Request body text is empty' }),
             { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
         
         try {
           body = JSON.parse(text);
+          console.log("Parsed body:", body);
         } catch (parseError) {
           console.error("Failed to parse JSON body:", parseError);
           return new Response(
