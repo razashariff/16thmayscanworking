@@ -20,6 +20,15 @@ interface ScanRequest {
   user_id: string;
 }
 
+interface ScanResults {
+  high?: any[];
+  medium?: any[];
+  low?: any[];
+  informational?: any[];
+  report_path?: string;
+  error?: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -182,13 +191,44 @@ serve(async (req) => {
         const zapData = await zapResponse.json();
         console.log(`ZAP scan initiated successfully with response: ${JSON.stringify(zapData)}`);
         
-        // Update scan status to in_progress if it's a real scan
+        // Update scan status to completed if it's a real scan
         if (user_id !== 'test-scan') {
+          // If we have a report path from ZAP, upload it to Supabase storage
+          let reportPath = null;
+          if (zapData.results?.report_path) {
+            try {
+              // Fetch the report file from ZAP scanner
+              const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${dbScanId}`);
+              if (reportResponse.ok) {
+                const reportBlob = await reportResponse.blob();
+                
+                // Upload to Supabase storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                  .from('scan_reports')
+                  .upload(`${dbScanId}.txt`, reportBlob, {
+                    contentType: 'text/plain',
+                    upsert: true
+                  });
+                
+                if (uploadError) {
+                  console.error('Error uploading report:', uploadError);
+                } else {
+                  reportPath = uploadData.path;
+                }
+              }
+            } catch (error) {
+              console.error('Error handling report:', error);
+            }
+          }
+
           await supabase
             .from('vulnerability_scans')
             .update({ 
-              status: 'in_progress',
-              progress: 0
+              status: 'completed',
+              progress: 100,
+              summary: zapData.results,
+              report_path: reportPath,
+              completed_at: new Date().toISOString()
             })
             .eq('id', dbScanId);
         }
@@ -312,38 +352,48 @@ serve(async (req) => {
         if (!scan_id.startsWith('test-')) {
           // If scan is completed, store the report in Supabase storage
           if (zapData.status === 'completed' && zapData.results) {
-            const { data: scan, error: scanError } = await supabase
-              .from('vulnerability_scans')
-              .select('user_id')
-              .eq('id', scan_id)
-              .single();
-
-            if (!scanError && scan) {
-              // Store JSON report in storage
-              const reportPath = `${scan.user_id}/${scan_id}.json`;
-              const { error: storageError } = await supabase
-                .storage
-                .from('scan_reports')
-                .upload(reportPath, JSON.stringify(zapData.results), {
-                  contentType: 'application/json',
-                  upsert: true,
-                });
-
-              if (storageError) {
-                console.error('Error storing report:', storageError);
-              } else {
-                // Update scan with report path and summary
-                await supabase
-                  .from('vulnerability_scans')
-                  .update({
-                    status: 'completed',
-                    progress: 100,
-                    report_path: reportPath,
-                    summary: zapData.results,
-                    completed_at: new Date().toISOString()
-                  })
-                  .eq('id', scan_id);
+            try {
+              // Fetch the report file from ZAP scanner
+              const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${scan_id}`);
+              if (reportResponse.ok) {
+                const reportBlob = await reportResponse.blob();
+                
+                // Upload to Supabase storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                  .from('scan_reports')
+                  .upload(`${scan_id}.txt`, reportBlob, {
+                    contentType: 'text/plain',
+                    upsert: true
+                  });
+                
+                if (uploadError) {
+                  console.error('Error uploading report:', uploadError);
+                } else {
+                  // Update scan with report path and summary
+                  await supabase
+                    .from('vulnerability_scans')
+                    .update({
+                      status: 'completed',
+                      progress: 100,
+                      report_path: uploadData.path,
+                      summary: zapData.results,
+                      completed_at: new Date().toISOString()
+                    })
+                    .eq('id', scan_id);
+                }
               }
+            } catch (error) {
+              console.error('Error handling report:', error);
+              // Still update the scan status even if report upload fails
+              await supabase
+                .from('vulnerability_scans')
+                .update({
+                  status: 'completed',
+                  progress: 100,
+                  summary: zapData.results,
+                  completed_at: new Date().toISOString()
+                })
+                .eq('id', scan_id);
             }
           } else if (zapData.status === 'running') {
             // Update progress for in-progress scans
