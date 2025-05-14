@@ -1,7 +1,6 @@
 
 // Import required libraries
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.3"
 
 // CORS headers for cross-origin requests
 const corsHeaders = {
@@ -10,17 +9,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-// Create Supabase client with the service role key
-const supabaseUrl = Deno.env.get("SUPABASE_URL")
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// ZAP API endpoint (Cloud function in our case)
-const ZAP_API_URL = "https://zap-api.your-domain.com" // Replace with actual API URL if it exists
+// ZAP Scanner API endpoint
+const ZAP_SCANNER_URL = "https://zap-scanner-211605900220.europe-west2.run.app/scan"
 
 serve(async (req) => {
-  console.log("Request received:", req.method)
-
   // Handle CORS preflight request
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -32,10 +24,11 @@ serve(async (req) => {
   try {
     if (req.method === "POST") {
       // Extract request data
-      const { target_url, scan_type, scan_id, user_id } = await req.json()
-      console.log(`Received scan request for ${target_url}, scan_id: ${scan_id}, type: ${scan_type}`)
-
-      // Validate input
+      const requestData = await req.json()
+      const { target_url, scan_id } = requestData
+      
+      console.log(`Processing scan request for ${target_url}, scan_id: ${scan_id}`)
+      
       if (!target_url) {
         return new Response(
           JSON.stringify({ error: "Missing target URL" }),
@@ -43,151 +36,92 @@ serve(async (req) => {
         )
       }
 
-      try {
-        new URL(target_url)
-      } catch (e) {
-        return new Response(
-          JSON.stringify({ error: "Invalid URL format" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        )
+      // Simply forward the request to ZAP Scanner API
+      const zapRequest = {
+        url: target_url,
       }
-
-      // Update the scan status to 'in_progress'
+      
+      // If we have a scan_id, include it
       if (scan_id) {
-        const { error: updateError } = await supabase
-          .from('vulnerability_scans')
-          .update({ 
-            status: 'in_progress',
-            progress: 0,
-            started_at: new Date().toISOString()
-          })
-          .eq('id', scan_id)
-
-        if (updateError) {
-          console.error("Error updating scan status:", updateError)
-        }
+        zapRequest.scan_id = scan_id
       }
 
-      // In a real implementation, you would call your ZAP API here
-      // For the demo, we're simulating it with a successful response
+      console.log("Sending request to ZAP Scanner:", zapRequest)
+      
+      // Make the direct request to the ZAP Scanner API
+      const response = await fetch(ZAP_SCANNER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(zapRequest),
+      })
+      
+      const responseData = await response.json()
+      console.log("ZAP Scanner response:", responseData)
+      
+      // Return the ZAP Scanner response
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Scan initiated successfully", 
-          scan_id: scan_id 
-        }),
+        JSON.stringify(responseData),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       )
     } 
     else if (req.method === "GET") {
-      // Extract scan ID from request parameters
-      let scanId = null;
+      // Extract scan ID from request - support either URL params or body
+      let scanId = null
       
-      // Check if body is provided (for our modified approach)
-      try {
-        const body = await req.json();
-        scanId = body.scan_id;
-      } catch (e) {
-        // If parsing body fails, check URL parameters
-        const url = new URL(req.url);
-        scanId = url.searchParams.get("scan_id");
+      // Try to get scan ID from URL params
+      const url = new URL(req.url)
+      scanId = url.searchParams.get("scan_id")
+      
+      // If not in URL params, try to get from body
+      if (!scanId) {
+        try {
+          const body = await req.json()
+          scanId = body.scan_id
+        } catch (e) {
+          // Body may not be JSON or may not exist
+          console.log("No JSON body or scan_id in request")
+        }
       }
-      
-      console.log("Checking status for scan:", scanId);
       
       if (!scanId) {
         return new Response(
           JSON.stringify({ error: "Missing scan ID" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        )
       }
-
-      // Query the database for scan status
-      const { data: scanData, error: scanError } = await supabase
-        .from('vulnerability_scans')
-        .select('*')
-        .eq('id', scanId)
-        .single();
-
-      if (scanError) {
-        console.error("Error fetching scan:", scanError);
-        return new Response(
-          JSON.stringify({ error: "Failed to fetch scan status" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      if (!scanData) {
-        return new Response(
-          JSON.stringify({ error: "Scan not found" }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Return scan information
-      // For demo purposes, we'll simulate progress
-      const progress = scanData.progress || Math.floor(Math.random() * 100);
-      const status = scanData.status || "in_progress";
       
-      // If progress is 100% and status is still in_progress, mark as completed
-      const updatedStatus = progress >= 100 ? "completed" : status;
-      const isCompleted = updatedStatus === "completed";
+      console.log("Checking status for scan:", scanId)
       
-      // Update progress in database if not completed
-      if (status === "in_progress" || status === "pending") {
-        const { error: updateError } = await supabase
-          .from('vulnerability_scans')
-          .update({ 
-            progress: progress + (progress < 95 ? Math.floor(Math.random() * 15) : 100 - progress),
-            status: updatedStatus,
-            completed_at: isCompleted ? new Date().toISOString() : null,
-            // Add mock results if scan is completed
-            summary: isCompleted ? {
-              high: Array(Math.floor(Math.random() * 3)).fill({"fake": "vulnerability"}),
-              medium: Array(Math.floor(Math.random() * 5)).fill({"fake": "vulnerability"}),
-              low: Array(Math.floor(Math.random() * 7)).fill({"fake": "vulnerability"}),
-              informational: Array(Math.floor(Math.random() * 10)).fill({"fake": "info"})
-            } : null
-          })
-          .eq('id', scanId);
-
-        if (updateError) {
-          console.error("Error updating scan progress:", updateError);
-        }
-      }
-
-      // Fetch the updated scan data
-      const { data: updatedScanData, error: updatedScanError } = await supabase
-        .from('vulnerability_scans')
-        .select('*')
-        .eq('id', scanId)
-        .single();
+      // Make request to ZAP Scanner status endpoint
+      const response = await fetch(`${ZAP_SCANNER_URL}/${scanId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
       
-      if (updatedScanError) {
-        console.error("Error fetching updated scan:", updatedScanError);
-      }
-
+      const responseData = await response.json()
+      console.log("ZAP Scanner status response:", responseData)
+      
+      // Return the ZAP Scanner status response
       return new Response(
-        JSON.stringify({
-          status: updatedScanData?.status || updatedStatus,
-          progress: updatedScanData?.progress || progress,
-          results: updatedScanData?.results || null,
-          summary: updatedScanData?.summary || null
-        }),
+        JSON.stringify(responseData),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      )
     }
     
     // Method not allowed
     return new Response(
       JSON.stringify({ error: "Method not allowed" }),
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    )
   } catch (error) {
-    console.error("Error processing request:", error);
+    console.error("Error processing request:", error)
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    )
   }
 })

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,11 +32,11 @@ const TestScanButton = () => {
       setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
       
-      // Use URL params instead of body for GET request
+      // Simple GET request with query parameter
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: { scan_id: scanId }
+        queryParams: { scan_id: scanId }
       });
       
       if (error) {
@@ -105,16 +106,15 @@ const TestScanButton = () => {
       // Generate a temporary scan ID for test scans
       const tempScanId = `test-${Date.now()}`;
       
+      // Simplify the payload to match the direct ZAP API requirements
       const payload = {
         target_url: url,
-        scan_type: 'quick',
-        scan_id: tempScanId,
-        user_id: 'test-scan'
+        scan_id: tempScanId
       };
       
       console.log("Sending test scan request with payload:", payload);
       
-      // Using Supabase edge function with appropriate parameters and explicit content-type
+      // Simple POST request
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'POST',
         body: payload,
