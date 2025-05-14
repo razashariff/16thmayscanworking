@@ -3,6 +3,7 @@ project_id = "jjdzrxfriezvfxjacche"
 
 [functions.zap-scan]
 verify_jwt = false
+path = "./supabase/functions/zap-scan"
 
 [functions.create-checkout]
 verify_jwt = true
