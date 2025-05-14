@@ -32,11 +32,11 @@ const TestScanButton = () => {
       setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
       
-      // Construct the URL with query parameters for the GET request
+      // Use the correct path parameter format for GET requests
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        // Pass query parameters in the URL instead of as a separate object
-        url: `${scanId}`
+        // Pass scan_id as a path parameter
+        path: `/${scanId}`
       });
       
       if (error) {
