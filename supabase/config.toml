@@ -1,11 +1,21 @@
 
 project_id = "jjdzrxfriezvfxjacche"
 
-[functions.zap-scan]
-verify_jwt = false
+[api]
+port = 54321
+schemas = ["public", "storage"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
-[functions.create-checkout]
-verify_jwt = true
+[db]
+port = 54322
 
-[storage.scan_reports]
+[studio]
+port = 54323
+
+[storage]
+file_size_limit = "50MiB"
+
+[[storage.buckets]]
+name = "scan_reports"
 public = false

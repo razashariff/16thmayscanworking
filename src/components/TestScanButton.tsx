@@ -32,11 +32,11 @@ const TestScanButton = () => {
       setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
       
-      // Use body parameter for the scan_id with proper Content-Type header
+      // Use query parameter instead of body for GET requests
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        body: { scan_id: scanId },
-        headers: { 'Content-Type': 'application/json' }
+        // Don't send body for GET requests, use queryParams instead
+        queryParams: { scan_id: scanId }
       });
       
       if (error) {

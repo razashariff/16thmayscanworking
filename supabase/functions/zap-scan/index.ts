@@ -48,41 +48,18 @@ serve(async (req) => {
         // Log all request headers for debugging
         console.log("Request headers:", Object.fromEntries(req.headers));
         
-        // Clone the request for debugging
-        const clonedReq = req.clone();
-        let requestText;
-        try {
-          requestText = await clonedReq.text();
-          console.log("Raw request body:", requestText);
-        } catch (e) {
-          console.error("Error reading request body for debugging:", e);
-        }
-        
         // Parse the request body
         let body: ScanRequest;
         
-        if (requestText && requestText.trim()) {
-          try {
-            body = JSON.parse(requestText);
-            console.log("Parsed body from text:", body);
-          } catch (parseError) {
-            console.error("Failed to parse JSON body from text:", parseError);
-            return new Response(
-              JSON.stringify({ error: 'Invalid JSON in request body' }),
-              { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-            );
-          }
-        } else {
-          try {
-            body = await req.json();
-            console.log("Directly parsed body:", body);
-          } catch (jsonError) {
-            console.error("Failed to parse request body as JSON:", jsonError);
-            return new Response(
-              JSON.stringify({ error: 'Request body cannot be parsed as JSON' }),
-              { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-            );
-          }
+        try {
+          body = await req.json();
+          console.log("Parsed request body:", body);
+        } catch (jsonError) {
+          console.error("Failed to parse request body as JSON:", jsonError);
+          return new Response(
+            JSON.stringify({ error: 'Request body cannot be parsed as JSON' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
         }
         
         // Validate required fields
@@ -184,44 +161,13 @@ serve(async (req) => {
           const zapData = await zapResponse.json();
           console.log(`ZAP scan initiated successfully with response: ${JSON.stringify(zapData)}`);
           
-          // Update scan status to completed if it's a real scan
+          // Update scan status if it's a real scan
           if (user_id !== 'test-scan') {
-            // If we have a report path from ZAP, upload it to Supabase storage
-            let reportPath = null;
-            if (zapData.results?.report_path) {
-              try {
-                // Fetch the report file from ZAP scanner
-                const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${dbScanId}`);
-                if (reportResponse.ok) {
-                  const reportBlob = await reportResponse.blob();
-                  
-                  // Upload to Supabase storage
-                  const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('scan_reports')
-                    .upload(`${dbScanId}.txt`, reportBlob, {
-                      contentType: 'text/plain',
-                      upsert: true
-                    });
-                  
-                  if (uploadError) {
-                    console.error('Error uploading report:', uploadError);
-                  } else {
-                    reportPath = uploadData.path;
-                  }
-                }
-              } catch (error) {
-                console.error('Error handling report:', error);
-              }
-            }
-
             await supabase
               .from('vulnerability_scans')
               .update({ 
-                status: 'completed',
-                progress: 100,
-                summary: zapData.results,
-                report_path: reportPath,
-                completed_at: new Date().toISOString()
+                status: 'pending',
+                progress: 0
               })
               .eq('id', dbScanId);
           }
@@ -264,27 +210,17 @@ serve(async (req) => {
       }
     }
     
-    // Handle checking scan status - GET request
+    // Handle checking scan status - GET request with query parameters
     else if (req.method === 'GET') {
-      let scan_id = null;
-      
       try {
-        // Try to get scan_id from request body
-        try {
-          const requestBody = await req.json();
-          scan_id = requestBody.scan_id;
-          console.log(`Found scan_id in request body: ${scan_id}`);
-        } catch (bodyError) {
-          console.log("Could not parse request body:", bodyError);
-          // Fall back to URL search params
-          scan_id = url.searchParams.get('scan_id');
-          if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
-        }
+        // Get scan_id from URL query parameters
+        const scan_id = url.searchParams.get('scan_id');
+        console.log(`Looking for scan_id in query params: ${scan_id}`);
         
         if (!scan_id) {
-          console.error("No scan_id found in request");
+          console.error("No scan_id found in query parameters");
           return new Response(
-            JSON.stringify({ error: 'Missing scan_id parameter' }),
+            JSON.stringify({ error: 'Missing scan_id parameter in URL' }),
             { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
