@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// CORS headers to ensure our requests work correctly
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-zap-secret',
@@ -30,12 +31,14 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     const path = url.pathname.split('/').pop();
+    console.log(`Handling ${req.method} request for path: ${url.pathname}`);
     
     // Handle initiating a scan
     if (req.method === 'POST') {
       try {
         const body: ScanRequest = await req.json();
         const { target_url, scan_type = 'full', scan_id, user_id } = body;
+        console.log(`Processing scan request: ${JSON.stringify(body)}`);
 
         if (!target_url || !scan_id || !user_id) {
           return new Response(
@@ -62,6 +65,7 @@ serve(async (req) => {
             .single();
 
           if (scanError || !scan) {
+            console.error(`Scan verification error: ${scanError?.message || "Not found"}`);
             return new Response(
               JSON.stringify({ error: 'Scan not found or not authorized' }),
               { 
@@ -116,6 +120,7 @@ serve(async (req) => {
           }
 
           const zapData = await zapResponse.json();
+          console.log(`ZAP scan initiated successfully with response: ${JSON.stringify(zapData)}`);
           
           // Update scan status to in_progress if it's a real scan
           if (user_id !== 'test-scan') {
@@ -129,7 +134,11 @@ serve(async (req) => {
           }
 
           return new Response(
-            JSON.stringify(zapData),
+            JSON.stringify({ 
+              scan_id: dbScanId,
+              status: 'pending',
+              ...zapData
+            }),
             { 
               status: 200, 
               headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -169,44 +178,51 @@ serve(async (req) => {
         );
       }
     }
-    // Handle checking scan status
+    // Handle checking scan status - GET request
     else if (req.method === 'GET') {
       let scan_id: string | null = null;
       
-      // Check if scan_id is in path
-      if (path && path !== 'zap-scan') {
-        scan_id = path;
-      } 
-      // Check if scan_id is in the request body
-      else {
+      try {
+        // First check if scan_id is in the request body
         try {
           const body = await req.json();
           scan_id = body.scan_id;
+          console.log(`Found scan_id in request body: ${scan_id}`);
         } catch (e) {
-          console.error("Error parsing request body:", e);
+          // If we can't parse JSON, that's fine, we'll check other places
+          console.log("No JSON body or not parseable");
         }
-      }
-      
-      // If still no scan_id, check query parameters as fallback
-      if (!scan_id) {
-        scan_id = url.searchParams.get('scan_id');
-      }
-      
-      if (!scan_id) {
-        return new Response(
-          JSON.stringify({ error: 'Missing scan_id parameter' }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-          }
-        );
-      }
-      
-      console.log(`Checking status for scan ${scan_id}`);
-      
-      try {
+        
+        // If no scan_id in body, check if it's in path
+        if (!scan_id && path && path !== 'zap-scan') {
+          scan_id = path;
+          console.log(`Found scan_id in path: ${scan_id}`);
+        }
+        
+        // If still no scan_id, check query parameters as fallback
+        if (!scan_id) {
+          scan_id = url.searchParams.get('scan_id');
+          if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
+        }
+        
+        if (!scan_id) {
+          console.error("No scan_id found in request");
+          return new Response(
+            JSON.stringify({ error: 'Missing scan_id parameter' }),
+            {
+              status: 400,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            }
+          );
+        }
+        
+        console.log(`Checking status for scan ${scan_id}`);
+        
         // Call ZAP Scanner directly to check status
-        const zapResponse = await fetch(`${ZAP_SCANNER_URL}/${scan_id}`, {
+        const zapStatusUrl = `${ZAP_SCANNER_URL}/${scan_id}`;
+        console.log(`Fetching from: ${zapStatusUrl}`);
+        
+        const zapResponse = await fetch(zapStatusUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -214,7 +230,10 @@ serve(async (req) => {
         });
 
         if (!zapResponse.ok) {
-          if (zapResponse.status === 404) {
+          const statusCode = zapResponse.status;
+          console.error(`ZAP Scanner returned status ${statusCode}`);
+          
+          if (statusCode === 404) {
             console.warn(`Scan ID ${scan_id} not found on ZAP Scanner server`);
             
             // Check if this is a normal scan (not test)
@@ -255,13 +274,14 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
             { 
-              status: zapResponse.status, 
+              status: statusCode, 
               headers: { 'Content-Type': 'application/json', ...corsHeaders } 
             }
           );
         }
 
         const zapData = await zapResponse.json();
+        console.log(`ZAP Scanner status response: ${JSON.stringify(zapData)}`);
         
         // Check if this is a normal scan (not test)
         if (!scan_id.startsWith('test-')) {
@@ -300,13 +320,24 @@ serve(async (req) => {
                   .eq('id', scan_id);
               }
             }
-          } else if (zapData.status !== 'completed') {
-            // Just update progress for in-progress scans
+          } else if (zapData.status === 'running') {
+            // Update progress for in-progress scans
             await supabase
               .from('vulnerability_scans')
               .update({
-                status: zapData.status,
-                progress: zapData.progress
+                status: 'in_progress',
+                progress: zapData.progress || 0
+              })
+              .eq('id', scan_id);
+          } else if (zapData.status === 'failed') {
+            // Update status for failed scans
+            await supabase
+              .from('vulnerability_scans')
+              .update({
+                status: 'failed',
+                progress: 0,
+                summary: { error: zapData.error || 'Unknown error' },
+                completed_at: new Date().toISOString()
               })
               .eq('id', scan_id);
           }
@@ -320,9 +351,10 @@ serve(async (req) => {
           }
         );
       } catch (fetchError) {
-        console.error(`Error contacting ZAP Scanner: ${fetchError.message}`);
+        console.error(`Error in GET handler: ${fetchError.message}`);
+        console.error(`Stack trace: ${fetchError.stack}`);
         return new Response(
-          JSON.stringify({ error: `Error contacting ZAP Scanner: ${fetchError.message}` }),
+          JSON.stringify({ error: `Error checking scan status: ${fetchError.message}` }),
           { 
             status: 500, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -339,7 +371,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Unhandled error:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: error.message }),
       { 

@@ -14,6 +14,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
+
 const TestScanButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState('');
@@ -23,6 +26,7 @@ const TestScanButton = () => {
   const [scanId, setScanId] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<string | null>(null);
   const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Get the JWT token from Supabase session when component mounts
   useEffect(() => {
@@ -71,6 +75,7 @@ const TestScanButton = () => {
     
     try {
       console.log(`Checking status for scan ${scanId}`);
+      setRetryCount(0); // Reset retry count on new attempt
       
       // Using Supabase edge function to check scan status
       const { data, error } = await supabase.functions.invoke('zap-scan', {
@@ -81,10 +86,28 @@ const TestScanButton = () => {
       
       if (error) {
         console.error('Edge function error:', error);
+        
+        // Implement retry logic
+        if (retryCount < MAX_RETRIES) {
+          setRetryCount(prev => prev + 1);
+          console.log(`Retrying... Attempt ${retryCount + 1}/${MAX_RETRIES}`);
+          
+          // Wait before retrying
+          setTimeout(checkScanStatus, RETRY_DELAY);
+        } else {
+          // After max retries, show error to user
+          toast({
+            variant: "destructive",
+            title: "Connection Error",
+            description: "Could not check scan status. Please try again later."
+          });
+        }
+        
         return;
       }
       
       if (data) {
+        console.log(`Scan status: ${data.status}, progress: ${data.progress}`);
         setScanStatus(data.status);
         
         if (data.status === 'completed') {
@@ -93,12 +116,22 @@ const TestScanButton = () => {
             title: "Scan Completed",
             description: "Vulnerability scan completed successfully!"
           });
+          
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            setPollInterval(null);
+          }
         } else if (data.status === 'failed') {
           toast({
             variant: "destructive",
             title: "Scan Failed",
             description: data.error || "An error occurred during the scan"
           });
+          
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            setPollInterval(null);
+          }
         }
       }
     } catch (error) {
@@ -200,12 +233,6 @@ const TestScanButton = () => {
               className="bg-cyber-dark/60 border-cyber-neon/30 text-cyber-text"
             />
 
-            {!token && (
-              <div className="bg-amber-950/30 border border-amber-500/30 p-3 rounded-md text-amber-200 text-sm">
-                Not logged in. Authentication is required for scanning.
-              </div>
-            )}
-
             {scanStatus === 'pending' && (
               <div className="bg-blue-950/30 border border-blue-500/30 p-3 rounded-md text-blue-200 text-sm flex items-center">
                 <Loader className="animate-spin h-4 w-4 mr-2" />
@@ -228,7 +255,7 @@ const TestScanButton = () => {
             </Button>
             <Button 
               onClick={runTestScan} 
-              disabled={isLoading || !token || scanStatus === 'pending'}
+              disabled={isLoading || scanStatus === 'pending'}
               className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
             >
               {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
