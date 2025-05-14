@@ -23,7 +23,7 @@ serve(async (req) => {
 
   try {
     if (req.method === "POST") {
-      // Extract request data
+      // For POST requests - initiating a new scan
       const requestData = await req.json()
       const { target_url, scan_id } = requestData
       
@@ -36,55 +36,43 @@ serve(async (req) => {
         )
       }
 
-      // Simply forward the request to ZAP Scanner API
-      const zapRequest = {
-        url: target_url,
-      }
-      
-      // If we have a scan_id, include it
-      if (scan_id) {
-        zapRequest.scan_id = scan_id
-      }
-
-      console.log("Sending request to ZAP Scanner:", zapRequest)
-      
-      // Make the direct request to the ZAP Scanner API
+      // Forward the request to ZAP Scanner API
       const response = await fetch(ZAP_SCANNER_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(zapRequest),
+        body: JSON.stringify({
+          url: target_url,
+          ...(scan_id && { scan_id }),
+        }),
       })
       
       const responseData = await response.json()
       console.log("ZAP Scanner response:", responseData)
       
-      // Return the ZAP Scanner response
       return new Response(
         JSON.stringify(responseData),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       )
     } 
     else if (req.method === "GET") {
-      // Extract scan ID from request - support either URL params or body
+      // For GET requests - checking scan status
       let scanId = null
+      const url = new URL(req.url)
       
-      try {
-        // First try to get scan_id from body (for our frontend API)
-        const body = await req.json()
-        scanId = body.scan_id
-        console.log("Found scan_id in request body:", scanId)
-      } catch (e) {
-        // Body may not be JSON or may not exist, which is fine
-        console.log("No JSON body or couldn't parse body, checking URL params")
-      }
+      // First try to get scan_id from URL params
+      scanId = url.searchParams.get("scan_id")
       
-      // If not in body, try to get from URL params
+      // If not in URL params, try to get from body
       if (!scanId) {
-        const url = new URL(req.url)
-        scanId = url.searchParams.get("scan_id")
-        console.log("Found scan_id in URL params:", scanId)
+        try {
+          const body = await req.json()
+          scanId = body.scan_id
+        } catch (e) {
+          // Body parsing error - probably no body provided
+          console.log("Could not parse request body:", e)
+        }
       }
       
       if (!scanId) {
@@ -107,7 +95,6 @@ serve(async (req) => {
       const responseData = await response.json()
       console.log("ZAP Scanner status response:", responseData)
       
-      // Return the ZAP Scanner status response
       return new Response(
         JSON.stringify(responseData),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
