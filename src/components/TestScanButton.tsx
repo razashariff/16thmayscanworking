@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
-import { Shield, Loader } from 'lucide-react';
+import { Shield, Loader, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -13,9 +13,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 2000; // 2 seconds
+import { Progress } from "@/components/ui/progress";
 
 const TestScanButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,33 +22,15 @@ const TestScanButton = () => {
   const [results, setResults] = useState<any>(null);
   const [scanId, setScanId] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<string | null>(null);
-  const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-
-  // Effect to poll for scan status
-  useEffect(() => {
-    if (scanId && scanStatus === 'pending') {
-      const interval = setInterval(async () => {
-        await checkScanStatus();
-      }, 5000);
-      
-      setPollInterval(interval);
-      
-      return () => clearInterval(interval);
-    } else if (scanStatus === 'completed' || scanStatus === 'failed') {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        setPollInterval(null);
-      }
-    }
-  }, [scanId, scanStatus]);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   const checkScanStatus = async () => {
     if (!scanId) return;
     
     try {
+      setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
-      setRetryCount(0); // Reset retry count on new attempt
       
       // Using path parameters for GET request
       const { data, error } = await supabase.functions.invoke(`zap-scan/${scanId}`, {
@@ -60,29 +40,18 @@ const TestScanButton = () => {
       
       if (error) {
         console.error('Edge function error:', error);
-        
-        // Implement retry logic
-        if (retryCount < MAX_RETRIES) {
-          setRetryCount(prev => prev + 1);
-          console.log(`Retrying... Attempt ${retryCount + 1}/${MAX_RETRIES}`);
-          
-          // Wait before retrying
-          setTimeout(checkScanStatus, RETRY_DELAY);
-        } else {
-          // After max retries, show error to user
-          toast({
-            variant: "destructive",
-            title: "Connection Error",
-            description: "Could not check scan status. Please try again later."
-          });
-        }
-        
+        toast({
+          variant: "destructive",
+          title: "Connection Error",
+          description: "Could not check scan status. Please try again later."
+        });
         return;
       }
       
       if (data) {
         console.log(`Scan status: ${data.status}, progress: ${data.progress}`);
         setScanStatus(data.status);
+        setScanProgress(data.progress || 0);
         
         if (data.status === 'completed') {
           setResults(data.results);
@@ -90,26 +59,18 @@ const TestScanButton = () => {
             title: "Scan Completed",
             description: "Vulnerability scan completed successfully!"
           });
-          
-          if (pollInterval) {
-            clearInterval(pollInterval);
-            setPollInterval(null);
-          }
         } else if (data.status === 'failed') {
           toast({
             variant: "destructive",
             title: "Scan Failed",
             description: data.error || "An error occurred during the scan"
           });
-          
-          if (pollInterval) {
-            clearInterval(pollInterval);
-            setPollInterval(null);
-          }
         }
       }
     } catch (error) {
       console.error('Error checking scan status:', error);
+    } finally {
+      setIsCheckingStatus(false);
     }
   };
 
@@ -138,6 +99,7 @@ const TestScanButton = () => {
     setResults(null);
     setScanId(null);
     setScanStatus(null);
+    setScanProgress(0);
     
     try {
       // Generate a temporary scan ID for test scans
@@ -162,6 +124,7 @@ const TestScanButton = () => {
       console.log("Scan response:", data);
       setScanId(data.scan_id || tempScanId);
       setScanStatus('pending');
+      setScanProgress(0);
       
       toast({
         title: "Success",
@@ -207,15 +170,40 @@ const TestScanButton = () => {
               className="bg-cyber-dark/60 border-cyber-neon/30 text-cyber-text"
             />
 
-            {scanStatus === 'pending' && (
-              <div className="bg-blue-950/30 border border-blue-500/30 p-3 rounded-md text-blue-200 text-sm flex items-center">
-                <Loader className="animate-spin h-4 w-4 mr-2" />
-                Scan in progress... This may take several minutes.
+            {scanStatus && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span>Status: {scanStatus === 'pending' ? 'Initializing' : 
+                         scanStatus === 'running' || scanStatus === 'in_progress' ? 'In Progress' : 
+                         scanStatus === 'completed' ? 'Completed' : 'Failed'}</span>
+                  <span>{scanProgress}%</span>
+                </div>
+                
+                <Progress value={scanProgress} className="h-2" />
+                
+                {(scanStatus === 'pending' || scanStatus === 'running' || scanStatus === 'in_progress') && (
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={checkScanStatus} 
+                      variant="outline" 
+                      size="sm" 
+                      disabled={isCheckingStatus}
+                      className="flex items-center gap-1 text-xs"
+                    >
+                      {isCheckingStatus ? 
+                        <Loader className="h-3 w-3 animate-spin" /> : 
+                        <RefreshCw className="h-3 w-3" />
+                      }
+                      Check Status
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
             {results && (
               <div className="bg-cyber-dark/80 border border-cyber-neon/30 p-4 rounded-md max-h-60 overflow-auto">
+                <h3 className="text-sm font-semibold mb-2">Scan Results:</h3>
                 <pre className="text-xs whitespace-pre-wrap text-cyber-text">
                   {JSON.stringify(results, null, 2)}
                 </pre>
@@ -225,11 +213,11 @@ const TestScanButton = () => {
 
           <DialogFooter>
             <Button onClick={() => setIsOpen(false)} variant="outline">
-              Cancel
+              Close
             </Button>
             <Button 
               onClick={runTestScan} 
-              disabled={isLoading || scanStatus === 'pending'}
+              disabled={isLoading || scanStatus === 'pending' || scanStatus === 'running' || scanStatus === 'in_progress'}
               className="bg-gradient-to-r from-cyber-blue to-cyber-purple hover:from-cyber-purple hover:to-cyber-blue"
             >
               {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}

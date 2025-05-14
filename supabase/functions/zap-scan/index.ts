@@ -28,6 +28,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Request received:", req.method, req.url);
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     console.log(`Handling ${req.method} request for URL: ${url.pathname}, search params: ${url.search}`);
@@ -35,17 +36,57 @@ serve(async (req) => {
     // Extract scan ID from path if present (format: /zap-scan/{scanId})
     const pathSegments = url.pathname.split('/');
     const pathScanId = pathSegments.length > 2 ? pathSegments[pathSegments.length - 1] : null;
+    console.log("Path segments:", pathSegments, "Path scan ID:", pathScanId);
     
     // Handle initiating a scan
     if (req.method === 'POST') {
       try {
-        const body: ScanRequest = await req.json();
+        const requestBody = await req.text();
+        console.log("Request body received:", requestBody);
+        
+        let body: ScanRequest;
+        try {
+          body = JSON.parse(requestBody);
+        } catch (parseError) {
+          console.error("Failed to parse JSON body:", parseError);
+          return new Response(
+            JSON.stringify({ error: 'Invalid JSON in request body' }),
+            { 
+              status: 400, 
+              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+            }
+          );
+        }
+        
         const { target_url, scan_type = 'full', scan_id, user_id } = body;
         console.log(`Processing scan request: ${JSON.stringify(body)}`);
 
-        if (!target_url || !scan_id || !user_id) {
+        if (!target_url) {
+          console.error("Missing target_url in request");
           return new Response(
-            JSON.stringify({ error: 'Missing required parameters' }),
+            JSON.stringify({ error: 'Missing target_url parameter' }),
+            { 
+              status: 400, 
+              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+            }
+          );
+        }
+        
+        if (!scan_id) {
+          console.error("Missing scan_id in request");
+          return new Response(
+            JSON.stringify({ error: 'Missing scan_id parameter' }),
+            { 
+              status: 400, 
+              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+            }
+          );
+        }
+        
+        if (!user_id) {
+          console.error("Missing user_id in request");
+          return new Response(
+            JSON.stringify({ error: 'Missing user_id parameter' }),
             { 
               status: 400, 
               headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -171,9 +212,9 @@ serve(async (req) => {
           );
         }
       } catch (jsonError) {
-        console.error(`Error parsing request body: ${jsonError.message}`);
+        console.error(`Error processing request: ${jsonError.message}`);
         return new Response(
-          JSON.stringify({ error: `Error parsing request body: ${jsonError.message}` }),
+          JSON.stringify({ error: `Error processing request: ${jsonError.message}` }),
           { 
             status: 400, 
             headers: { 'Content-Type': 'application/json', ...corsHeaders } 
@@ -202,9 +243,12 @@ serve(async (req) => {
         try {
           const contentType = req.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
-            const body = await req.json();
-            scan_id = body.scan_id;
-            if (scan_id) console.log(`Found scan_id in request body: ${scan_id}`);
+            const text = await req.text();
+            if (text) {
+              const body = JSON.parse(text);
+              scan_id = body.scan_id;
+              if (scan_id) console.log(`Found scan_id in request body: ${scan_id}`);
+            }
           }
         } catch (e) {
           console.log("No JSON body or not parseable");
