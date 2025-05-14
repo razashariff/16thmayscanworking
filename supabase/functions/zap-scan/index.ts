@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -210,15 +209,17 @@ serve(async (req) => {
       }
     }
     
-    // Handle checking scan status - GET request with query parameters
+    // Handle checking scan status - GET request with path parameter
     else if (req.method === 'GET') {
       try {
-        // Get scan_id from URL query parameters
-        const scan_id = url.searchParams.get('scan_id');
-        console.log(`Looking for scan_id in query params: ${scan_id}`);
+        // Extract scan_id from the URL path
+        const pathParts = url.pathname.split('/');
+        const scan_id = pathParts[pathParts.length - 1];
         
-        if (!scan_id) {
-          console.error("No scan_id found in query parameters");
+        console.log(`Looking for scan_id in path: ${scan_id}`);
+        
+        if (!scan_id || scan_id === 'zap-scan') {
+          console.error("No scan_id found in path");
           return new Response(
             JSON.stringify({ error: 'Missing scan_id parameter in URL' }),
             { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
