@@ -30,8 +30,7 @@ serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
-    const path = url.pathname.split('/').pop();
-    console.log(`Handling ${req.method} request for path: ${url.pathname}`);
+    console.log(`Handling ${req.method} request for URL: ${url.pathname}, search params: ${url.search}`);
     
     // Handle initiating a scan
     if (req.method === 'POST') {
@@ -180,48 +179,52 @@ serve(async (req) => {
     }
     // Handle checking scan status - GET request
     else if (req.method === 'GET') {
-      let scan_id: string | null = null;
+      // Try to get scan_id from query parameters first
+      let scan_id = url.searchParams.get('scan_id');
       
-      try {
-        // First check if scan_id is in the request body
-        try {
-          const body = await req.json();
-          scan_id = body.scan_id;
-          console.log(`Found scan_id in request body: ${scan_id}`);
-        } catch (e) {
-          // If we can't parse JSON, that's fine, we'll check other places
-          console.log("No JSON body or not parseable");
-        }
-        
-        // If no scan_id in body, check if it's in path
-        if (!scan_id && path && path !== 'zap-scan') {
-          scan_id = path;
+      // If no scan_id in query params, try to get from the path
+      if (!scan_id && url.pathname.includes('/')) {
+        const pathParts = url.pathname.split('/');
+        const lastPart = pathParts[pathParts.length - 1];
+        if (lastPart && lastPart !== 'zap-scan') {
+          scan_id = lastPart;
           console.log(`Found scan_id in path: ${scan_id}`);
         }
-        
-        // If still no scan_id, check query parameters as fallback
-        if (!scan_id) {
-          scan_id = url.searchParams.get('scan_id');
-          if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
+      }
+      
+      // If still no scan_id, try to get from request body as fallback
+      if (!scan_id) {
+        try {
+          const contentType = req.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const body = await req.json();
+            scan_id = body.scan_id;
+            if (scan_id) console.log(`Found scan_id in request body: ${scan_id}`);
+          }
+        } catch (e) {
+          // If parsing fails, that's okay, we'll check other sources
+          console.log("No JSON body or not parseable");
         }
-        
-        if (!scan_id) {
-          console.error("No scan_id found in request");
-          return new Response(
-            JSON.stringify({ error: 'Missing scan_id parameter' }),
-            {
-              status: 400,
-              headers: { 'Content-Type': 'application/json', ...corsHeaders }
-            }
-          );
-        }
-        
-        console.log(`Checking status for scan ${scan_id}`);
-        
-        // Call ZAP Scanner directly to check status
-        const zapStatusUrl = `${ZAP_SCANNER_URL}/${scan_id}`;
-        console.log(`Fetching from: ${zapStatusUrl}`);
-        
+      }
+      
+      if (!scan_id) {
+        console.error("No scan_id found in request");
+        return new Response(
+          JSON.stringify({ error: 'Missing scan_id parameter' }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          }
+        );
+      }
+      
+      console.log(`Checking status for scan ${scan_id}`);
+      
+      // Call ZAP Scanner directly to check status
+      const zapStatusUrl = `${ZAP_SCANNER_URL}/${scan_id}`;
+      console.log(`Fetching from: ${zapStatusUrl}`);
+      
+      try {
         const zapResponse = await fetch(zapStatusUrl, {
           method: 'GET',
           headers: {

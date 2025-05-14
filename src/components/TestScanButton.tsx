@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,11 +76,12 @@ const TestScanButton = () => {
       console.log(`Checking status for scan ${scanId}`);
       setRetryCount(0); // Reset retry count on new attempt
       
-      // Using Supabase edge function to check scan status
+      // Using Supabase edge function to check scan status (using queryparams for GET request)
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        body: { scan_id: scanId },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'json',
+        query: { scan_id: scanId }
       });
       
       if (error) {
@@ -169,7 +169,7 @@ const TestScanButton = () => {
       // Generate a temporary scan ID for test scans
       const tempScanId = `test-${Date.now()}`;
       
-      // Using Supabase edge function instead of direct FastAPI call
+      // Using Supabase edge function with appropriate parameters
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'POST',
         body: {
@@ -178,7 +178,8 @@ const TestScanButton = () => {
           scan_id: tempScanId,
           user_id: 'test-scan' // Special identifier for test scans
         },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'json'
       });
       
       if (error) {
