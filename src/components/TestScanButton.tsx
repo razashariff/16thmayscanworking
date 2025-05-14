@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,11 +32,11 @@ const TestScanButton = () => {
       setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
       
-      // Use body parameter for the scan_id
+      // Use body parameter for the scan_id with proper Content-Type header
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: { scan_id: scanId }
+        body: { scan_id: scanId },
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (error) {
@@ -49,7 +50,7 @@ const TestScanButton = () => {
       }
       
       if (data) {
-        console.log(`Scan status: ${data.status}, progress: ${data.progress}`);
+        console.log(`Scan status response:`, data);
         setScanStatus(data.status);
         setScanProgress(data.progress || 0);
         
@@ -112,7 +113,7 @@ const TestScanButton = () => {
         user_id: 'test-scan'
       };
       
-      console.log("Sending scan request with payload:", payload);
+      console.log("Sending test scan request with payload:", payload);
       
       // Using Supabase edge function with appropriate parameters and explicit content-type
       const { data, error } = await supabase.functions.invoke('zap-scan', {
@@ -122,17 +123,18 @@ const TestScanButton = () => {
       });
       
       if (error) {
+        console.error('Edge function error:', error);
         throw new Error(`Edge function error: ${error.message}`);
       }
       
-      console.log("Scan response:", data);
+      console.log("Test scan response:", data);
       setScanId(data.scan_id || tempScanId);
       setScanStatus('pending');
       setScanProgress(0);
       
       toast({
         title: "Success",
-        description: "Scan initiated successfully"
+        description: "Test scan initiated successfully"
       });
     } catch (error) {
       console.error('Error during test scan:', error);

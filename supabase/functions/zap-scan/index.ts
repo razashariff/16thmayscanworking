@@ -44,45 +44,35 @@ serve(async (req) => {
     
     // Handle initiating a scan - POST request
     if (req.method === 'POST') {
-      // Log the request headers for debugging
-      console.log("Request headers:", Object.fromEntries(req.headers));
-      
-      // Check for valid content type
-      const contentType = req.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        console.error("Invalid content type:", contentType);
-        return new Response(
-          JSON.stringify({ error: 'Content-Type must be application/json' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-      
-      // Clone the request for debugging
-      const clonedReq = req.clone();
-      let requestText;
       try {
-        requestText = await clonedReq.text();
-        console.log("Raw request body:", requestText);
-      } catch (e) {
-        console.error("Error reading request body for debugging:", e);
-      }
-      
-      // Safely parse the request body
-      let body: ScanRequest;
-      try {
-        if (requestText && requestText.trim() !== '') {
+        // Log all request headers for debugging
+        console.log("Request headers:", Object.fromEntries(req.headers));
+        
+        // Clone the request for debugging
+        const clonedReq = req.clone();
+        let requestText;
+        try {
+          requestText = await clonedReq.text();
+          console.log("Raw request body:", requestText);
+        } catch (e) {
+          console.error("Error reading request body for debugging:", e);
+        }
+        
+        // Parse the request body
+        let body: ScanRequest;
+        
+        if (requestText && requestText.trim()) {
           try {
             body = JSON.parse(requestText);
-            console.log("Parsed body:", body);
+            console.log("Parsed body from text:", body);
           } catch (parseError) {
-            console.error("Failed to parse JSON body:", parseError);
+            console.error("Failed to parse JSON body from text:", parseError);
             return new Response(
               JSON.stringify({ error: 'Invalid JSON in request body' }),
               { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
             );
           }
         } else {
-          // If we couldn't get the text earlier, try to get the body directly
           try {
             body = await req.json();
             console.log("Directly parsed body:", body);
@@ -94,177 +84,181 @@ serve(async (req) => {
             );
           }
         }
-      } catch (bodyReadError) {
-        console.error("Error reading request body:", bodyReadError);
-        return new Response(
-          JSON.stringify({ error: 'Could not read request body' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-      
-      // Validate required fields
-      const { target_url, scan_type = 'full', scan_id, user_id } = body || {};
-      console.log(`Processing scan request:`, body);
+        
+        // Validate required fields
+        const { target_url, scan_type = 'full', scan_id, user_id } = body || {};
+        console.log(`Processing scan request with fields:`, { target_url, scan_type, scan_id, user_id });
 
-      if (!target_url) {
-        console.error("Missing target_url in request");
-        return new Response(
-          JSON.stringify({ error: 'Missing target_url parameter' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-      
-      if (!scan_id) {
-        console.error("Missing scan_id in request");
-        return new Response(
-          JSON.stringify({ error: 'Missing scan_id parameter' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-      
-      if (!user_id) {
-        console.error("Missing user_id in request");
-        return new Response(
-          JSON.stringify({ error: 'Missing user_id parameter' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-
-      // Special handling for test scans
-      let dbScanId = scan_id;
-      if (user_id === 'test-scan') {
-        // For test scans, we don't need to verify in the database
-        console.log(`Processing test scan for ${target_url} with ID ${scan_id}`);
-      } else {
-        // Verify that the scan exists and belongs to the user
-        const { data: scan, error: scanError } = await supabase
-          .from('vulnerability_scans')
-          .select('*')
-          .eq('id', scan_id)
-          .eq('user_id', user_id)
-          .single();
-
-        if (scanError || !scan) {
-          console.error(`Scan verification error: ${scanError?.message || "Not found"}`);
+        if (!target_url) {
+          console.error("Missing target_url in request");
           return new Response(
-            JSON.stringify({ error: 'Scan not found or not authorized' }),
-            { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            JSON.stringify({ error: 'Missing target_url parameter' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
         
-        dbScanId = scan.id;
-      }
-
-      // Call ZAP Scanner directly
-      console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${dbScanId}`);
-      
-      try {
-        const zapResponse = await fetch(ZAP_SCANNER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url: target_url,
-            scan_id: dbScanId,
-            scan_type: scan_type
-          })
-        });
-
-        console.log(`ZAP Scanner response status: ${zapResponse.status}`);
+        if (!scan_id) {
+          console.error("Missing scan_id in request");
+          return new Response(
+            JSON.stringify({ error: 'Missing scan_id parameter' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
         
-        if (!zapResponse.ok) {
-          const errorText = await zapResponse.text();
-          console.error(`ZAP Scanner error: ${errorText}`);
+        if (!user_id) {
+          console.error("Missing user_id in request");
+          return new Response(
+            JSON.stringify({ error: 'Missing user_id parameter' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+
+        // Special handling for test scans
+        let dbScanId = scan_id;
+        if (user_id === 'test-scan') {
+          // For test scans, we don't need to verify in the database
+          console.log(`Processing test scan for ${target_url} with ID ${scan_id}`);
+        } else {
+          // Verify that the scan exists and belongs to the user
+          const { data: scan, error: scanError } = await supabase
+            .from('vulnerability_scans')
+            .select('*')
+            .eq('id', scan_id)
+            .eq('user_id', user_id)
+            .single();
+
+          if (scanError || !scan) {
+            console.error(`Scan verification error: ${scanError?.message || "Not found"}`);
+            return new Response(
+              JSON.stringify({ error: 'Scan not found or not authorized' }),
+              { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            );
+          }
           
-          // Update scan status to failed if it's a real scan (not test)
+          dbScanId = scan.id;
+        }
+
+        // Call ZAP Scanner directly
+        console.log(`Initiating ${scan_type} scan for ${target_url} with ID ${dbScanId}`);
+        
+        const zapRequestBody = JSON.stringify({
+          url: target_url,
+          scan_id: dbScanId,
+          scan_type: scan_type
+        });
+        console.log("ZAP Scanner request payload:", zapRequestBody);
+        
+        try {
+          const zapResponse = await fetch(ZAP_SCANNER_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: zapRequestBody
+          });
+
+          console.log(`ZAP Scanner response status: ${zapResponse.status}`);
+          
+          if (!zapResponse.ok) {
+            const errorText = await zapResponse.text();
+            console.error(`ZAP Scanner error: ${errorText}`);
+            
+            // Update scan status to failed if it's a real scan (not test)
+            if (user_id !== 'test-scan') {
+              await supabase
+                .from('vulnerability_scans')
+                .update({ 
+                  status: 'failed', 
+                  summary: { error: `ZAP Scanner error: ${errorText}` },
+                  completed_at: new Date().toISOString()
+                })
+                .eq('id', dbScanId);
+            }
+            
+            return new Response(
+              JSON.stringify({ error: `ZAP Scanner error: ${errorText}` }),
+              { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            );
+          }
+
+          const zapData = await zapResponse.json();
+          console.log(`ZAP scan initiated successfully with response: ${JSON.stringify(zapData)}`);
+          
+          // Update scan status to completed if it's a real scan
+          if (user_id !== 'test-scan') {
+            // If we have a report path from ZAP, upload it to Supabase storage
+            let reportPath = null;
+            if (zapData.results?.report_path) {
+              try {
+                // Fetch the report file from ZAP scanner
+                const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${dbScanId}`);
+                if (reportResponse.ok) {
+                  const reportBlob = await reportResponse.blob();
+                  
+                  // Upload to Supabase storage
+                  const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('scan_reports')
+                    .upload(`${dbScanId}.txt`, reportBlob, {
+                      contentType: 'text/plain',
+                      upsert: true
+                    });
+                  
+                  if (uploadError) {
+                    console.error('Error uploading report:', uploadError);
+                  } else {
+                    reportPath = uploadData.path;
+                  }
+                }
+              } catch (error) {
+                console.error('Error handling report:', error);
+              }
+            }
+
+            await supabase
+              .from('vulnerability_scans')
+              .update({ 
+                status: 'completed',
+                progress: 100,
+                summary: zapData.results,
+                report_path: reportPath,
+                completed_at: new Date().toISOString()
+              })
+              .eq('id', dbScanId);
+          }
+
+          return new Response(
+            JSON.stringify({ 
+              scan_id: dbScanId,
+              status: 'pending',
+              ...zapData
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        } catch (fetchError) {
+          console.error(`Error contacting ZAP Scanner: ${fetchError.message}`);
+          
+          // Update scan status to failed if it's a real scan
           if (user_id !== 'test-scan') {
             await supabase
               .from('vulnerability_scans')
               .update({ 
                 status: 'failed', 
-                summary: { error: `ZAP Scanner error: ${errorText}` },
+                summary: { error: `Error contacting ZAP Scanner: ${fetchError.message}` },
                 completed_at: new Date().toISOString()
               })
               .eq('id', dbScanId);
           }
           
           return new Response(
-            JSON.stringify({ error: `ZAP Scanner error: ${errorText}` }),
+            JSON.stringify({ error: `Error contacting ZAP Scanner: ${fetchError.message}` }),
             { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
-
-        const zapData = await zapResponse.json();
-        console.log(`ZAP scan initiated successfully with response: ${JSON.stringify(zapData)}`);
-        
-        // Update scan status to completed if it's a real scan
-        if (user_id !== 'test-scan') {
-          // If we have a report path from ZAP, upload it to Supabase storage
-          let reportPath = null;
-          if (zapData.results?.report_path) {
-            try {
-              // Fetch the report file from ZAP scanner
-              const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${dbScanId}`);
-              if (reportResponse.ok) {
-                const reportBlob = await reportResponse.blob();
-                
-                // Upload to Supabase storage
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                  .from('scan_reports')
-                  .upload(`${dbScanId}.txt`, reportBlob, {
-                    contentType: 'text/plain',
-                    upsert: true
-                  });
-                
-                if (uploadError) {
-                  console.error('Error uploading report:', uploadError);
-                } else {
-                  reportPath = uploadData.path;
-                }
-              }
-            } catch (error) {
-              console.error('Error handling report:', error);
-            }
-          }
-
-          await supabase
-            .from('vulnerability_scans')
-            .update({ 
-              status: 'completed',
-              progress: 100,
-              summary: zapData.results,
-              report_path: reportPath,
-              completed_at: new Date().toISOString()
-            })
-            .eq('id', dbScanId);
-        }
-
+      } catch (requestError) {
+        console.error(`Error processing POST request: ${requestError.message}`);
+        console.error(`Stack trace: ${requestError.stack}`);
         return new Response(
-          JSON.stringify({ 
-            scan_id: dbScanId,
-            status: 'pending',
-            ...zapData
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      } catch (fetchError) {
-        console.error(`Error contacting ZAP Scanner: ${fetchError.message}`);
-        
-        // Update scan status to failed if it's a real scan
-        if (user_id !== 'test-scan') {
-          await supabase
-            .from('vulnerability_scans')
-            .update({ 
-              status: 'failed', 
-              summary: { error: `Error contacting ZAP Scanner: ${fetchError.message}` },
-              completed_at: new Date().toISOString()
-            })
-            .eq('id', dbScanId);
-        }
-        
-        return new Response(
-          JSON.stringify({ error: `Error contacting ZAP Scanner: ${fetchError.message}` }),
+          JSON.stringify({ error: `Error processing scan request: ${requestError.message}` }),
           { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
@@ -275,165 +269,173 @@ serve(async (req) => {
       let scan_id = null;
       
       try {
-        // Now we expect the scan_id in the request body instead of path
-        const requestBody = await req.json();
-        scan_id = requestBody.scan_id;
-        console.log(`Found scan_id in request body: ${scan_id}`);
-      } catch (error) {
-        console.error("Error parsing request body:", error);
-        // As fallback, try URL search params
-        scan_id = url.searchParams.get('scan_id');
-        if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
-      }
-      
-      if (!scan_id) {
-        console.error("No scan_id found in request");
-        return new Response(
-          JSON.stringify({ error: 'Missing scan_id parameter' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-      
-      console.log(`Checking status for scan ${scan_id}`);
-      
-      // Call ZAP Scanner directly to check status
-      const zapStatusUrl = `${ZAP_SCANNER_URL}/${scan_id}`;
-      console.log(`Fetching from: ${zapStatusUrl}`);
-      
-      try {
-        const zapResponse = await fetch(zapStatusUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        // Try to get scan_id from request body
+        try {
+          const requestBody = await req.json();
+          scan_id = requestBody.scan_id;
+          console.log(`Found scan_id in request body: ${scan_id}`);
+        } catch (bodyError) {
+          console.log("Could not parse request body:", bodyError);
+          // Fall back to URL search params
+          scan_id = url.searchParams.get('scan_id');
+          if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
+        }
+        
+        if (!scan_id) {
+          console.error("No scan_id found in request");
+          return new Response(
+            JSON.stringify({ error: 'Missing scan_id parameter' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+        
+        console.log(`Checking status for scan ${scan_id}`);
+        
+        // Call ZAP Scanner directly to check status
+        const zapStatusUrl = `${ZAP_SCANNER_URL}/${scan_id}`;
+        console.log(`Fetching from: ${zapStatusUrl}`);
+        
+        try {
+          const zapResponse = await fetch(zapStatusUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
-        if (!zapResponse.ok) {
-          const statusCode = zapResponse.status;
-          console.error(`ZAP Scanner returned status ${statusCode}`);
-          
-          if (statusCode === 404) {
-            console.warn(`Scan ID ${scan_id} not found on ZAP Scanner server`);
+          if (!zapResponse.ok) {
+            const statusCode = zapResponse.status;
+            console.error(`ZAP Scanner returned status ${statusCode}`);
             
-            // Check if this is a normal scan (not test)
-            if (!scan_id.startsWith('test-')) {
-              const { error: updateError } = await supabase
+            if (statusCode === 404) {
+              console.warn(`Scan ID ${scan_id} not found on ZAP Scanner server`);
+              
+              // Check if this is a normal scan (not test)
+              if (!scan_id.startsWith('test-')) {
+                const { error: updateError } = await supabase
+                  .from('vulnerability_scans')
+                  .update({
+                    status: 'failed',
+                    progress: 0,
+                    summary: { error: 'Scan not found on server' },
+                    completed_at: new Date().toISOString()
+                  })
+                  .eq('id', scan_id);
+                
+                if (updateError) {
+                  console.error(`Error updating scan status to failed: ${updateError.message}`);
+                }
+              }
+              
+              return new Response(
+                JSON.stringify({ 
+                  scan_id: scan_id,
+                  status: 'failed',
+                  progress: 0,
+                  results: null,
+                  error: 'Scan not found on server'
+                }),
+                { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+              );
+            }
+            
+            const error = await zapResponse.text();
+            console.error(`ZAP Scanner error: ${error}`);
+            return new Response(
+              JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
+              { status: statusCode, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            );
+          }
+
+          const zapData = await zapResponse.json();
+          console.log(`ZAP Scanner status response: ${JSON.stringify(zapData)}`);
+          
+          // Check if this is a normal scan (not test)
+          if (!scan_id.startsWith('test-')) {
+            // If scan is completed, store the report in Supabase storage
+            if (zapData.status === 'completed' && zapData.results) {
+              try {
+                // Fetch the report file from ZAP scanner
+                const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${scan_id}`);
+                if (reportResponse.ok) {
+                  const reportBlob = await reportResponse.blob();
+                  
+                  // Upload to Supabase storage
+                  const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('scan_reports')
+                    .upload(`${scan_id}.txt`, reportBlob, {
+                      contentType: 'text/plain',
+                      upsert: true
+                    });
+                  
+                  if (uploadError) {
+                    console.error('Error uploading report:', uploadError);
+                  } else {
+                    // Update scan with report path and summary
+                    await supabase
+                      .from('vulnerability_scans')
+                      .update({
+                        status: 'completed',
+                        progress: 100,
+                        report_path: uploadData.path,
+                        summary: zapData.results,
+                        completed_at: new Date().toISOString()
+                      })
+                      .eq('id', scan_id);
+                  }
+                }
+              } catch (error) {
+                console.error('Error handling report:', error);
+                // Still update the scan status even if report upload fails
+                await supabase
+                  .from('vulnerability_scans')
+                  .update({
+                    status: 'completed',
+                    progress: 100,
+                    summary: zapData.results,
+                    completed_at: new Date().toISOString()
+                  })
+                  .eq('id', scan_id);
+              }
+            } else if (zapData.status === 'running') {
+              // Update progress for in-progress scans
+              await supabase
+                .from('vulnerability_scans')
+                .update({
+                  status: 'in_progress',
+                  progress: zapData.progress || 0
+                })
+                .eq('id', scan_id);
+            } else if (zapData.status === 'failed') {
+              // Update status for failed scans
+              await supabase
                 .from('vulnerability_scans')
                 .update({
                   status: 'failed',
                   progress: 0,
-                  summary: { error: 'Scan not found on server' },
+                  summary: { error: zapData.error || 'Unknown error' },
                   completed_at: new Date().toISOString()
                 })
                 .eq('id', scan_id);
-              
-              if (updateError) {
-                console.error(`Error updating scan status to failed: ${updateError.message}`);
-              }
             }
-            
-            return new Response(
-              JSON.stringify({ 
-                scan_id: scan_id,
-                status: 'failed',
-                progress: 0,
-                results: null,
-                error: 'Scan not found on server'
-              }),
-              { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-            );
           }
-          
-          const error = await zapResponse.text();
-          console.error(`ZAP Scanner error: ${error}`);
+
           return new Response(
-            JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
-            { status: statusCode, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            JSON.stringify(zapData),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        } catch (fetchError) {
+          console.error(`Error in GET handler: ${fetchError.message}`);
+          console.error(`Stack trace: ${fetchError.stack}`);
+          return new Response(
+            JSON.stringify({ error: `Error checking scan status: ${fetchError.message}` }),
+            { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
-
-        const zapData = await zapResponse.json();
-        console.log(`ZAP Scanner status response: ${JSON.stringify(zapData)}`);
-        
-        // Check if this is a normal scan (not test)
-        if (!scan_id.startsWith('test-')) {
-          // If scan is completed, store the report in Supabase storage
-          if (zapData.status === 'completed' && zapData.results) {
-            try {
-              // Fetch the report file from ZAP scanner
-              const reportResponse = await fetch(`${ZAP_SCANNER_URL}/report/${scan_id}`);
-              if (reportResponse.ok) {
-                const reportBlob = await reportResponse.blob();
-                
-                // Upload to Supabase storage
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                  .from('scan_reports')
-                  .upload(`${scan_id}.txt`, reportBlob, {
-                    contentType: 'text/plain',
-                    upsert: true
-                  });
-                
-                if (uploadError) {
-                  console.error('Error uploading report:', uploadError);
-                } else {
-                  // Update scan with report path and summary
-                  await supabase
-                    .from('vulnerability_scans')
-                    .update({
-                      status: 'completed',
-                      progress: 100,
-                      report_path: uploadData.path,
-                      summary: zapData.results,
-                      completed_at: new Date().toISOString()
-                    })
-                    .eq('id', scan_id);
-                }
-              }
-            } catch (error) {
-              console.error('Error handling report:', error);
-              // Still update the scan status even if report upload fails
-              await supabase
-                .from('vulnerability_scans')
-                .update({
-                  status: 'completed',
-                  progress: 100,
-                  summary: zapData.results,
-                  completed_at: new Date().toISOString()
-                })
-                .eq('id', scan_id);
-            }
-          } else if (zapData.status === 'running') {
-            // Update progress for in-progress scans
-            await supabase
-              .from('vulnerability_scans')
-              .update({
-                status: 'in_progress',
-                progress: zapData.progress || 0
-              })
-              .eq('id', scan_id);
-          } else if (zapData.status === 'failed') {
-            // Update status for failed scans
-            await supabase
-              .from('vulnerability_scans')
-              .update({
-                status: 'failed',
-                progress: 0,
-                summary: { error: zapData.error || 'Unknown error' },
-                completed_at: new Date().toISOString()
-              })
-              .eq('id', scan_id);
-          }
-        }
-
+      } catch (error) {
+        console.error(`Error processing GET request: ${error.message}`);
         return new Response(
-          JSON.stringify(zapData),
-          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      } catch (fetchError) {
-        console.error(`Error in GET handler: ${fetchError.message}`);
-        console.error(`Stack trace: ${fetchError.stack}`);
-        return new Response(
-          JSON.stringify({ error: `Error checking scan status: ${fetchError.message}` }),
+          JSON.stringify({ error: `Error processing status check: ${error.message}` }),
           { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
