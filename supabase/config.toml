@@ -7,3 +7,6 @@ path = "./supabase/functions/zap-scan"
 
 [functions.create-checkout]
 verify_jwt = true
+
+[storage.scan_reports]
+public = false

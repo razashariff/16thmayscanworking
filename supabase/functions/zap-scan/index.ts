@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -43,6 +44,9 @@ serve(async (req) => {
     
     // Handle initiating a scan - POST request
     if (req.method === 'POST') {
+      // Log the request headers for debugging
+      console.log("Request headers:", Object.fromEntries(req.headers));
+      
       // Check for valid content type
       const contentType = req.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -53,41 +57,42 @@ serve(async (req) => {
         );
       }
       
-      // Check for content length
-      const contentLength = req.headers.get('content-length');
-      if (!contentLength || parseInt(contentLength, 10) <= 0) {
-        console.error("Empty request body");
-        return new Response(
-          JSON.stringify({ error: 'Request body cannot be empty' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
+      // Clone the request for debugging
+      const clonedReq = req.clone();
+      let requestText;
+      try {
+        requestText = await clonedReq.text();
+        console.log("Raw request body:", requestText);
+      } catch (e) {
+        console.error("Error reading request body for debugging:", e);
       }
       
       // Safely parse the request body
       let body: ScanRequest;
       try {
-        // Clone the request before consuming its body
-        const clonedReq = req.clone();
-        const text = await clonedReq.text();
-        console.log("Raw request body:", text);
-        
-        if (!text || text.trim() === '') {
-          console.error("Empty request body text");
-          return new Response(
-            JSON.stringify({ error: 'Request body text is empty' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-          );
-        }
-        
-        try {
-          body = JSON.parse(text);
-          console.log("Parsed body:", body);
-        } catch (parseError) {
-          console.error("Failed to parse JSON body:", parseError);
-          return new Response(
-            JSON.stringify({ error: 'Invalid JSON in request body' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-          );
+        if (requestText && requestText.trim() !== '') {
+          try {
+            body = JSON.parse(requestText);
+            console.log("Parsed body:", body);
+          } catch (parseError) {
+            console.error("Failed to parse JSON body:", parseError);
+            return new Response(
+              JSON.stringify({ error: 'Invalid JSON in request body' }),
+              { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            );
+          }
+        } else {
+          // If we couldn't get the text earlier, try to get the body directly
+          try {
+            body = await req.json();
+            console.log("Directly parsed body:", body);
+          } catch (jsonError) {
+            console.error("Failed to parse request body as JSON:", jsonError);
+            return new Response(
+              JSON.stringify({ error: 'Request body cannot be parsed as JSON' }),
+              { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+            );
+          }
         }
       } catch (bodyReadError) {
         console.error("Error reading request body:", bodyReadError);
@@ -98,7 +103,7 @@ serve(async (req) => {
       }
       
       // Validate required fields
-      const { target_url, scan_type = 'full', scan_id, user_id } = body;
+      const { target_url, scan_type = 'full', scan_id, user_id } = body || {};
       console.log(`Processing scan request:`, body);
 
       if (!target_url) {
@@ -166,9 +171,11 @@ serve(async (req) => {
           })
         });
 
+        console.log(`ZAP Scanner response status: ${zapResponse.status}`);
+        
         if (!zapResponse.ok) {
-          const error = await zapResponse.text();
-          console.error(`ZAP Scanner error: ${error}`);
+          const errorText = await zapResponse.text();
+          console.error(`ZAP Scanner error: ${errorText}`);
           
           // Update scan status to failed if it's a real scan (not test)
           if (user_id !== 'test-scan') {
@@ -176,14 +183,14 @@ serve(async (req) => {
               .from('vulnerability_scans')
               .update({ 
                 status: 'failed', 
-                summary: { error: `ZAP Scanner error: ${error}` },
+                summary: { error: `ZAP Scanner error: ${errorText}` },
                 completed_at: new Date().toISOString()
               })
               .eq('id', dbScanId);
           }
           
           return new Response(
-            JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
+            JSON.stringify({ error: `ZAP Scanner error: ${errorText}` }),
             { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
