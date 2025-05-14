@@ -38,58 +38,61 @@ serve(async (req) => {
     const pathScanId = pathSegments.length > 2 ? pathSegments[pathSegments.length - 1] : null;
     console.log("Path segments:", pathSegments, "Path scan ID:", pathScanId);
     
-    // Handle initiating a scan
+    // Handle initiating a scan - POST request
     if (req.method === 'POST') {
-      // Check if there's actually a request body before trying to parse it
+      let body: ScanRequest;
       const contentType = req.headers.get('content-type') || '';
-      const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
       
-      // Only attempt to parse JSON if there's content and it's the right type
-      if (!contentType.includes('application/json') || contentLength <= 0) {
-        console.error("Missing or invalid request body");
+      // Check that we have the right content type for POST
+      if (!contentType.includes('application/json')) {
+        console.error("Invalid content type:", contentType);
         return new Response(
-          JSON.stringify({ error: 'Request must include a JSON body with target_url, scan_id, and user_id' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          JSON.stringify({ error: 'Content-Type must be application/json' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
       
-      // Now it's safe to try parsing the JSON body
-      let body: ScanRequest;
-      
+      // Safely attempt to parse the request body
       try {
-        const requestBody = await req.text();
-        console.log("Request body received:", requestBody);
+        // Clone the request before consuming its body
+        const clonedReq = req.clone();
+        const text = await clonedReq.text();
+        console.log("Raw request body:", text);
         
-        if (!requestBody) {
-          throw new Error('Empty request body');
+        if (!text || text.trim() === '') {
+          console.error("Empty request body");
+          return new Response(
+            JSON.stringify({ error: 'Request body cannot be empty' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
         }
         
-        body = JSON.parse(requestBody);
-      } catch (parseError) {
-        console.error("Failed to parse JSON body:", parseError);
+        try {
+          body = JSON.parse(text);
+        } catch (parseError) {
+          console.error("Failed to parse JSON body:", parseError);
+          return new Response(
+            JSON.stringify({ error: 'Invalid JSON in request body' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+      } catch (bodyReadError) {
+        console.error("Error reading request body:", bodyReadError);
         return new Response(
-          JSON.stringify({ error: 'Invalid JSON in request body' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          JSON.stringify({ error: 'Could not read request body' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
       
+      // Validate required fields
       const { target_url, scan_type = 'full', scan_id, user_id } = body;
-      console.log(`Processing scan request: ${JSON.stringify(body)}`);
+      console.log(`Processing scan request:`, body);
 
       if (!target_url) {
         console.error("Missing target_url in request");
         return new Response(
           JSON.stringify({ error: 'Missing target_url parameter' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
       
@@ -97,10 +100,7 @@ serve(async (req) => {
         console.error("Missing scan_id in request");
         return new Response(
           JSON.stringify({ error: 'Missing scan_id parameter' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
       
@@ -108,10 +108,7 @@ serve(async (req) => {
         console.error("Missing user_id in request");
         return new Response(
           JSON.stringify({ error: 'Missing user_id parameter' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
 
@@ -133,10 +130,7 @@ serve(async (req) => {
           console.error(`Scan verification error: ${scanError?.message || "Not found"}`);
           return new Response(
             JSON.stringify({ error: 'Scan not found or not authorized' }),
-            { 
-              status: 404, 
-              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-            }
+            { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
         
@@ -177,10 +171,7 @@ serve(async (req) => {
           
           return new Response(
             JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
-            { 
-              status: 500, 
-              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-            }
+            { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
 
@@ -204,10 +195,7 @@ serve(async (req) => {
             status: 'pending',
             ...zapData
           }),
-          { 
-            status: 200, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       } catch (fetchError) {
         console.error(`Error contacting ZAP Scanner: ${fetchError.message}`);
@@ -226,57 +214,32 @@ serve(async (req) => {
         
         return new Response(
           JSON.stringify({ error: `Error contacting ZAP Scanner: ${fetchError.message}` }),
-          { 
-            status: 500, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
     }
+    
     // Handle checking scan status - GET request
     else if (req.method === 'GET') {
       let scan_id = null;
       
-      // 1. Try to get scan_id from the path directly (highest priority) - /zap-scan/123456
+      // Try to get scan_id from the path directly (highest priority) - /zap-scan/123456
       if (pathScanId && pathScanId !== 'zap-scan') {
         scan_id = pathScanId;
         console.log(`Found scan_id in path segments: ${scan_id}`);
       }
       
-      // 2. Try to get scan_id from the URL search params
+      // If not in path, try URL search params
       if (!scan_id) {
         scan_id = url.searchParams.get('scan_id');
         if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
-      }
-      
-      // 3. Try to get from request body as last resort - BUT safely
-      if (!scan_id) {
-        // Only try to parse JSON if there's a body with the right content type
-        const contentType = req.headers.get('content-type') || '';
-        const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
-        
-        if (contentType.includes('application/json') && contentLength > 0) {
-          try {
-            const text = await req.text();
-            if (text) {
-              const body = JSON.parse(text);
-              scan_id = body.scan_id;
-              if (scan_id) console.log(`Found scan_id in request body: ${scan_id}`);
-            }
-          } catch (e) {
-            console.log("No valid JSON body found or could not parse body: ", e.message);
-          }
-        }
       }
       
       if (!scan_id) {
         console.error("No scan_id found in request");
         return new Response(
           JSON.stringify({ error: 'Missing scan_id parameter' }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
-          }
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
       
@@ -303,7 +266,6 @@ serve(async (req) => {
             
             // Check if this is a normal scan (not test)
             if (!scan_id.startsWith('test-')) {
-              // We'll update the database to mark this scan as failed
               const { error: updateError } = await supabase
                 .from('vulnerability_scans')
                 .update({
@@ -327,10 +289,7 @@ serve(async (req) => {
                 results: null,
                 error: 'Scan not found on server'
               }),
-              { 
-                status: 200, 
-                headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-              }
+              { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
             );
           }
           
@@ -338,10 +297,7 @@ serve(async (req) => {
           console.error(`ZAP Scanner error: ${error}`);
           return new Response(
             JSON.stringify({ error: `ZAP Scanner error: ${error}` }),
-            { 
-              status: statusCode, 
-              headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-            }
+            { status: statusCode, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
 
@@ -410,39 +366,27 @@ serve(async (req) => {
 
         return new Response(
           JSON.stringify(zapData),
-          { 
-            status: 200, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       } catch (fetchError) {
         console.error(`Error in GET handler: ${fetchError.message}`);
         console.error(`Stack trace: ${fetchError.stack}`);
         return new Response(
           JSON.stringify({ error: `Error checking scan status: ${fetchError.message}` }),
-          { 
-            status: 500, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
+          { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
     }
 
     return new Response(
       JSON.stringify({ error: 'Invalid endpoint or method' }),
-      { 
-        status: 404, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
+      { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   } catch (error) {
     console.error('Unhandled error:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: error.message }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 });
