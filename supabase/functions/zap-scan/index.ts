@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -32,11 +31,6 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const url = new URL(req.url);
     console.log(`Handling ${req.method} request for URL: ${url.pathname}, search params: ${url.search}`);
-    
-    // Extract scan ID from path if present (format: /zap-scan/{scanId})
-    const pathSegments = url.pathname.split('/');
-    const pathScanId = pathSegments.length > 2 ? pathSegments[pathSegments.length - 1] : null;
-    console.log("Path segments:", pathSegments, "Path scan ID:", pathScanId);
     
     // Handle initiating a scan - POST request
     if (req.method === 'POST') {
@@ -233,14 +227,14 @@ serve(async (req) => {
     else if (req.method === 'GET') {
       let scan_id = null;
       
-      // Try to get scan_id from the path directly (highest priority) - /zap-scan/123456
-      if (pathScanId && pathScanId !== 'zap-scan') {
-        scan_id = pathScanId;
-        console.log(`Found scan_id in path segments: ${scan_id}`);
-      }
-      
-      // If not in path, try URL search params
-      if (!scan_id) {
+      try {
+        // Now we expect the scan_id in the request body instead of path
+        const requestBody = await req.json();
+        scan_id = requestBody.scan_id;
+        console.log(`Found scan_id in request body: ${scan_id}`);
+      } catch (error) {
+        console.error("Error parsing request body:", error);
+        // As fallback, try URL search params
         scan_id = url.searchParams.get('scan_id');
         if (scan_id) console.log(`Found scan_id in query params: ${scan_id}`);
       }

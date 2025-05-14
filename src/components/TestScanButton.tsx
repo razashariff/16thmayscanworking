@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,11 +32,11 @@ const TestScanButton = () => {
       setIsCheckingStatus(true);
       console.log(`Checking status for scan ${scanId}`);
       
-      // Using path parameter for GET request
+      // Use query parameters instead of path parameter
       const { data, error } = await supabase.functions.invoke('zap-scan', {
         method: 'GET',
-        path: `/${scanId}`,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: { scan_id: scanId }
       });
       
       if (error) {
