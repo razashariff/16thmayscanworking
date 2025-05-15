@@ -1,4 +1,4 @@
-
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 // Import required libraries
 // @ts-ignore - Deno types are available at runtime
 const { serve } = Deno;
@@ -97,7 +97,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     log('Handling CORS preflight request');
     return new Response(null, {
-      status: 204,
+      status: 200,
       headers: corsHeaders,
     })
   }
@@ -189,66 +189,86 @@ serve(async (req) => {
         const zapPayload: { url: string; scan_id?: string } = {
           url: target_url
         };
-        
         // Only add scan_id if it exists and is a non-empty string
         if (scan_id && typeof scan_id === 'string' && scan_id.trim() !== '') {
           zapPayload.scan_id = scan_id;
         }
+        console.log(`[ZAP-EDGE] Sending request to ZAP Scanner: ${ZAP_SCANNER_URL}`, zapPayload);
         
-        console.log(`Sending request to ZAP Scanner: ${ZAP_SCANNER_URL}`, zapPayload)
-        
-        const response = await fetch(ZAP_SCANNER_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(zapPayload),
-        })
-        
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error(`ZAP Scanner error (${response.status}):`, errorText)
-          return createResponse(
-            { 
-              error: "Error from ZAP Scanner",
-              status: response.status,
-              details: errorText
-            },
-            response.status
-          )
+        // Robust retry logic for ZAP scanner communication
+        let response;
+        let retryCount = 0;
+        const maxRetries = 3;
+        while (retryCount < maxRetries) {
+          try {
+            response = await fetch(ZAP_SCANNER_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(zapPayload),
+            });
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`[ZAP-EDGE] ZAP Scanner error (${response.status}):`, errorText);
+              if (retryCount < maxRetries - 1) {
+                retryCount++;
+                console.warn(`[ZAP-EDGE] Retrying ZAP Scanner request (${retryCount}/${maxRetries})...`);
+                await new Promise(res => setTimeout(res, 1000 * retryCount));
+                continue;
+              }
+              return createResponse(
+                {
+                  error: "Error from ZAP Scanner",
+                  status: response.status,
+                  details: errorText
+                },
+                response.status
+              );
+            }
+            break; // Success
+          } catch (err) {
+            console.error(`[ZAP-EDGE] Network error in ZAP Scanner request:`, err);
+            if (retryCount < maxRetries - 1) {
+              retryCount++;
+              await new Promise(res => setTimeout(res, 1000 * retryCount));
+              continue;
+            }
+            return handleError(err, "Failed to connect to ZAP Scanner after retries");
+          }
         }
-        
-        const responseData = await response.json()
-        console.log("ZAP Scanner response received")
-        
+        if (!response) {
+          return createResponse({ error: "Failed to contact ZAP Scanner after retries" }, 502);
+        }
+        const responseData = await response.json();
+        console.log("[ZAP-EDGE] ZAP Scanner response received", responseData);
+        // Defensive: Check for expected response fields
+        if (!responseData || typeof responseData !== 'object') {
+          return createResponse({ error: 'Malformed response from ZAP Scanner', responseData }, 502);
+        }
         // Save results to storage bucket
         try {
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-          const filename = `scan-${timestamp}.json`
-          const filePath = `scans/${filename}`
-          
-          console.log(`Saving results to storage: ${filePath}`)
-          
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const filename = `scan-${timestamp}.json`;
+          const filePath = `scans/${filename}`;
+          console.log(`[ZAP-EDGE] Saving results to storage: ${filePath}`);
           // Upload the file to Supabase Storage
           const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('scan_reports')  // Using your existing bucket
+            .from('scan_reports')
             .upload(filePath, JSON.stringify(responseData, null, 2), {
               contentType: 'application/json',
               upsert: false,
-            })
-          
+            });
           if (uploadError) {
-            console.error('Error uploading scan results:', uploadError)
+            console.error('[ZAP-EDGE] Error uploading scan results:', uploadError);
             // Continue even if upload fails, but include error in response
             return createResponse({
               ...responseData,
               storage_error: 'Failed to save results to storage',
               storage_details: uploadError.message
-            })
+            });
           }
-          
-          console.log('Results saved to storage:', uploadData)
-          
+          console.log('[ZAP-EDGE] Results saved to storage:', uploadData);
           // Return the original response plus storage info
           return createResponse({
             ...responseData,
@@ -257,18 +277,18 @@ serve(async (req) => {
               path: filePath,
               bucket: 'scan_reports'
             }
-          })
+          });
         } catch (storageError) {
-          console.error('Error handling storage:', storageError)
+          console.error('[ZAP-EDGE] Error handling storage:', storageError);
           // Return the scan results even if storage fails
           return createResponse({
             ...responseData,
             storage_error: 'Failed to process storage',
             storage_details: String(storageError)
-          })
+          });
         }
       } catch (error) {
-        return handleError(error, "Failed to connect to ZAP Scanner")
+        return handleError(error, "Failed to connect to ZAP Scanner");
       }
     } 
     else if (req.method === "GET") {
@@ -334,15 +354,9 @@ serve(async (req) => {
     }
     
     // Method not allowed
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    )
+    return createResponse({ error: "Method not allowed" }, 405);
   } catch (error) {
     console.error("Error processing request:", error)
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    )
+    return createResponse({ error: "Internal server error" }, 500);
   }
 })
