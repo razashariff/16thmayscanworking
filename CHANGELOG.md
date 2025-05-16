@@ -6,33 +6,25 @@ All notable changes to the Vulnerability Scanner project will be documented in t
 
 ## [Unreleased]
 
-### Fixed
-- **Syntax Errors in VulnerabilityScanner.tsx**
-  - Fixed multiple missing semicolons and misplaced curly braces, especially in nested try-catch blocks.
-  - Corrected the structure of `fetchStorageFiles` to use a proper `try { ... } catch { ... }` block.
-  - Removed invalid nested try-catch structure in scan initiation logic, replaced with a single flat try-catch-finally.
-  - Fixed function and block closures to resolve persistent Babel/TypeScript syntax errors.
+### Added
+- **New Vulnerability Scan Page**
+  - Created a new scan page allowing users to select a URL from Supabase, start a scan, and view the latest scan report.
+  - After scan initiation, the app polls the Supabase Storage bucket for the latest `.json` report file and displays its contents.
+  - The workflow is now consistent with `TestLatestScan.html`, ensuring users always see the most recent scan result for their selected URL.
 
 ### Improved
-- **Error Handling & User Feedback**
-  - Enhanced error messages for scan initiation and report fetching.
-  - Improved toast notifications for both success and error scenarios.
-  - Added clear error logging to help with debugging.
+- **User Experience**
+  - Simplified the scan flow: user selects a URL, starts a scan, and sees the latest report automatically.
+  - JSON report is shown in a `<pre>` block for clarity; future updates will convert this to a styled HTML report.
+  - Reduced confusion by always fetching results from storage, not from a database or status endpoint.
 
-### Refactored
-- **Code Structure**
-  - Separated scan initiation logic into a dedicated `startScan` function.
-  - Cleaned up and clarified async logic for fetching scan reports and starting scans.
-  - Improved function boundaries and code readability.
+### Fixed
+- **Polling Logic**
+  - Fixed polling to always show the latest scan report, regardless of scan_id or filename format.
 
 ### Security
-- **Supabase Integration**
-  - Ensured API keys and user session tokens are handled securely via environment variables.
-  - Improved handling of sensitive data when interacting with Supabase Storage and Edge Functions.
-
-### Other
-- **Browserslist**
-  - Reminder: Run `npx update-browserslist-db@latest` to update browser compatibility data.
+- **Supabase Storage**
+  - Scan results are securely fetched directly from the Supabase Storage bucket.
 
 ---
 
