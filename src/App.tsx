@@ -25,6 +25,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import VibeCodingSecurity from './pages/VibeCodingSecurity';
 import VulnerabilityScanner from './pages/VulnerabilityScanner';
 import VulnerabilityReport from './pages/VulnerabilityReport';
+import NewVulnerabilityScan from './pages/NewVulnerabilityScan';
 import SecurityAssessment from './pages/SecurityAssessment';
 import SecurityAssessmentQuestions from './pages/SecurityAssessmentQuestions';
 import SecurityAssessmentReport from './pages/SecurityAssessmentReport';
@@ -55,6 +56,7 @@ function App() {
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/vibe-coding-security" element={<VibeCodingSecurity />} />
         <Route path="/vulnerability-scanner" element={<VulnerabilityScanner />} />
+        <Route path="/new-vulnerability-scan" element={<NewVulnerabilityScan />} />
         <Route path="/vulnerability-report/:scanId" element={<VulnerabilityReport />} />
         <Route path="/security-assessment" element={<SecurityAssessment />} />
         <Route path="/security-assessment/:assessmentId" element={<SecurityAssessment />} />

@@ -16,25 +16,32 @@ export default function ReportPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (scanId) {
-      supabase
+    const fetchReport = async () => {
+      if (!scanId) return;
+      setLoading(true);
+      setError(null);
+      // Generate a signed URL for the private bucket
+      const { data: signedData, error: signedError } = await supabase
         .storage
         .from('scan_reports')
-        .download(`scans/scan-${scanId}.json`)
-        .then(({ data, error }) => {
-          if (error) {
-            setError('Could not fetch scan report.');
-            setLoading(false);
-            return;
-          }
-          if (data) {
-            data.text().then((text: string) => {
-              setData(JSON.parse(text));
-              setLoading(false);
-            });
-          }
-        });
-    }
+        .createSignedUrl(`scans/scan-${scanId}.json`, 60);
+      if (signedError || !signedData?.signedUrl) {
+        setError('Could not generate signed URL for scan report.');
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(signedData.signedUrl);
+        if (!response.ok) throw new Error('Failed to fetch scan report.');
+        const text = await response.text();
+        setData(JSON.parse(text));
+      } catch (err) {
+        setError('Could not fetch scan report.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReport();
   }, [scanId]);
 
   const handleDownloadPdf = () => {
