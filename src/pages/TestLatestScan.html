@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test: Latest Scan Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #181A20; color: #ececec; margin: 0; padding: 2rem; }
+    .container { max-width: 600px; margin: 2rem auto; background: #23262F; border-radius: 12px; box-shadow: 0 2px 16px #0003; padding: 2rem; }
+    button { background: linear-gradient(90deg, #5f72bd 0%, #9c6dd7 100%); color: #fff; border: none; border-radius: 6px; padding: 0.75rem 2rem; font-size: 1.1rem; cursor: pointer; margin-bottom: 1.5rem; }
+    button:disabled { opacity: 0.6; }
+    .error { color: #ff6b81; margin-top: 1rem; }
+    pre { background: #15171c; color: #e0e0e0; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+    .report { margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Latest Scan Report (Test)</h1>
+    <button id="fetchBtn">Fetch Latest Scan</button>
+    <button id="debugBtn" style="margin-left:1rem; background:#444;">Debug Buckets & Paths</button>
+    <div id="result" class="report"></div>
+    <div id="error" class="error"></div>
+    <pre id="debug" style="margin-top:2rem; background:#222; color:#aaffcc; padding:1rem; border-radius:8px; display:none;"></pre>
+  </div>
+  <script type="module">
+    import { supabase } from '../integrations/supabase/client.ts';
+
+    // Use correct bucket and folder for scans
+    const bucket = 'scan_reports';
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('error');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const debugBtn = document.getElementById('debugBtn');
+    const debugDiv = document.getElementById('debug');
+
+    debugBtn.onclick = async () => {
+      debugDiv.style.display = 'block';
+      debugDiv.textContent = 'Loading...';
+      let out = '';
+      try {
+        // 1. List all buckets
+        const { data: buckets, error: bucketErr } = await supabase.storage.listBuckets();
+        if (bucketErr) {
+          out += `Error listing buckets: ${bucketErr.message}\n`;
+        } else {
+          out += `Buckets:\n` + buckets.map(b => `- ${b.name}`).join('\n') + '\n\n';
+        }
+        // 2. List all top-level folders/files in scan-reports
+        const { data: topFiles, error: topErr } = await supabase.storage.from(bucket).list('', { limit: 100 });
+        if (topErr) {
+          out += `Error listing scan-reports top-level: ${topErr.message}\n`;
+        } else {
+          out += `scan-reports/ top-level:\n` + (topFiles && topFiles.length ? topFiles.map(f => `- ${f.name} (${f.metadata?.mimetype || 'folder'})`).join('\n') : '[none]') + '\n\n';
+        }
+        // 3. List all files in scans/ folder
+        const { data: scanFiles, error: scanErr } = await supabase.storage.from(bucket).list('scans/', { limit: 200 });
+        if (scanErr) {
+          out += `Error listing scan_reports/scans/: ${scanErr.message}\n`;
+        } else {
+          out += `scan_reports/scans/ files:\n` + (scanFiles && scanFiles.length ? scanFiles.map(f => `- ${f.name} (${f.metadata?.mimetype || 'file'})`).join('\n') : '[none]') + '\n';
+        }
+      } catch (err) {
+        out += `Unexpected error: ${err}`;
+      }
+      debugDiv.textContent = out;
+    };
+
+
+    fetchBtn.onclick = async () => {
+      resultDiv.innerHTML = '';
+      errorDiv.textContent = '';
+      fetchBtn.disabled = true;
+      try {
+        // 1. List all files for this user
+        // List files in 'scans/' folder
+        const { data: files, error: listError } = await supabase.storage.from(bucket).list('scans/', { limit: 200 });
+        if (listError || !files || files.length === 0) {
+          errorDiv.textContent = 'No scan reports found or error listing files.';
+          fetchBtn.disabled = false;
+          return;
+        }
+        // 2. Sort files by filename (descending, so latest timestamp is first)
+        const scanFiles = files.filter(f => f.name.endsWith('.json') || f.name.endsWith('.pdf'));
+        scanFiles.sort((a, b) => b.name.localeCompare(a.name));
+        const latest = scanFiles[0];
+        if (!latest) {
+          errorDiv.textContent = 'No scan report files found.';
+          fetchBtn.disabled = false;
+          return;
+        }
+        const filePath = `scans/${latest.name}`;
+        // 3. Get signed URL
+        const { data: urlData, error: urlError } = await supabase.storage.from(bucket).createSignedUrl(filePath, 60);
+        if (urlError || !urlData) {
+          errorDiv.textContent = 'Failed to get signed URL.';
+          fetchBtn.disabled = false;
+          return;
+        }
+        // 4. Fetch the JSON (assuming .json report)
+        if (latest.name.endsWith('.json')) {
+          const resp = await fetch(urlData.signedUrl);
+          const json = await resp.json();
+          resultDiv.innerHTML = `<h3>Scan Report: <code>${latest.name}</code></h3><pre>${JSON.stringify(json, null, 2)}</pre>`;
+        } else if (latest.name.endsWith('.pdf')) {
+          resultDiv.innerHTML = `<h3>Scan Report: <code>${latest.name}</code></h3><a href="${urlData.signedUrl}" target="_blank">Open PDF Report</a>`;
+        } else {
+          resultDiv.innerHTML = `<h3>Scan Report: <code>${latest.name}</code></h3><a href="${urlData.signedUrl}" target="_blank">Download Report</a>`;
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Unexpected error: ' + err;
+      }
+      fetchBtn.disabled = false;
+    };
+  </script>
+</body>
+</html>

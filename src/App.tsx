@@ -1,5 +1,4 @@
-
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from '@/components/ui/sonner';
 
@@ -34,38 +33,37 @@ import SecurityScan from './pages/SecurityScan';
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/contact-thank-you" element={<ContactThankYou />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/security-scores" element={<SecurityScores />} />
-          <Route path="/security-audits" element={<SecurityAudits />} />
-          <Route path="/security-training" element={<SecurityTraining />} />
-          <Route path="/incident-response" element={<IncidentResponse />} />
-          <Route path="/threat-detection" element={<ThreatDetection />} />
-          <Route path="/data-protection" element={<DataProtection />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/pricing" element={<PricingPlans />} />
-          <Route path="/service-signup/:plan" element={<ServiceSignup />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/vibe-coding-security" element={<VibeCodingSecurity />} />
-          <Route path="/vulnerability-scanner" element={<VulnerabilityScanner />} />
-          <Route path="/vulnerability-report/:scanId" element={<VulnerabilityReport />} />
-          <Route path="/security-assessment" element={<SecurityAssessment />} />
-          <Route path="/security-assessment/:assessmentId" element={<SecurityAssessmentQuestions />} />
-          <Route path="/security-assessment-report/:assessmentId" element={<SecurityAssessmentReport />} />
-          <Route path="/security-scan" element={<SecurityScan />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/contact-thank-you" element={<ContactThankYou />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/security-scores" element={<SecurityScores />} />
+        <Route path="/security-audits" element={<SecurityAudits />} />
+        <Route path="/security-training" element={<SecurityTraining />} />
+        <Route path="/incident-response" element={<IncidentResponse />} />
+        <Route path="/threat-detection" element={<ThreatDetection />} />
+        <Route path="/data-protection" element={<DataProtection />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/pricing" element={<PricingPlans />} />
+        <Route path="/service-signup/:plan" element={<ServiceSignup />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/vibe-coding-security" element={<VibeCodingSecurity />} />
+        <Route path="/vulnerability-scanner" element={<VulnerabilityScanner />} />
+        <Route path="/vulnerability-report/:scanId" element={<VulnerabilityReport />} />
+        <Route path="/security-assessment" element={<SecurityAssessment />} />
+        <Route path="/security-assessment/:assessmentId" element={<SecurityAssessment />} />
+        <Route path="/security-assessment-questions/:assessmentId" element={<SecurityAssessmentQuestions />} />
+        <Route path="/security-assessment-report/:assessmentId" element={<SecurityAssessmentReport />} />
+        <Route path="/security-scan" element={<SecurityScan />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
     </ThemeProvider>
   );
 }
